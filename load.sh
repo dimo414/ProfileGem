@@ -11,6 +11,7 @@
 # you need immidiately on hand.
 #
 
+_PRE_GEMP_PATH="$PATH"
 _GEMP_DEBUG=true
 _GEMP_PATH=$(realpath $(dirname "${BASH_SOURCE[0]}")) #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
 
@@ -28,9 +29,14 @@ _eachGem _loadEnv       # set environment variables
 _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
 
+popd > /dev/null
+
 if [ ! -z "$PS1" ]      # interactive shell
 then
+	pushd "$_GEMP_PATH" > /dev/null
 	_eachGem _runCmd    # run interactive commands
+	popd > /dev/null
+	
 	if [ -d $START_DIR ]
 	then
 		cd $START_DIR
@@ -40,6 +46,7 @@ then
 fi
 
 # Enable running a command in ProfileGem's scope
+# Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
 if [ $# -gt 0 ]
 then
