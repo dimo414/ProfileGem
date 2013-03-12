@@ -12,13 +12,15 @@
 #
 
 _GEMP_DEBUG=true
-_GEMP_PATH=$(realpath $(dirname "$0")) #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
+_GEMP_PATH=$(realpath $(dirname "${BASH_SOURCE[0]}")) #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
 
 pushd "$_GEMP_PATH" > /dev/null
 
 . ./gemFunctions.sh
 
 _GEM_LIST=$(_gemList)
+
+_eachGem _loadPre       # load pre-config resources
 
 _eachGem _parseConf     # load config settings
 
@@ -29,4 +31,17 @@ _eachGem _loadFuncs     # define functions
 if [ ! -z "$PS1" ]      # interactive shell
 then
 	_eachGem _runCmd    # run interactive commands
+	if [ -d $START_DIR ]
+	then
+		cd $START_DIR
+	else
+		echo "Start Dir $START_DIR Does Not Exist"
+	fi
+fi
+
+# Enable running a command in ProfileGem's scope
+# Note aliases are not accessible if it's not an interactive shell
+if [ $# -gt 0 ]
+then
+	"$@"
 fi

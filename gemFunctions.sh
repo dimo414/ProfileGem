@@ -45,6 +45,12 @@ _srcIfExist()
 	fi
 }
 
+# Load a file before configuration files are processed
+_loadPre()
+{
+	_srcIfExist pre.sh
+}
+
 # Parse configuration files
 _parseConf()
 {
