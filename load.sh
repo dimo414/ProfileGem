@@ -11,17 +11,18 @@
 # you need immidiately on hand.
 #
 
-_PRE_GEMP_PATH="$PATH"
-_GEMP_DEBUG=true
-_GEMP_PATH=$(realpath $(dirname "${BASH_SOURCE[0]}")) #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
+_PRE_PGEM_LOC="$PATH"
 
-pushd "$_GEMP_PATH" > /dev/null
+if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
+_PGEM_LOC=$(realpath "$(dirname "${BASH_SOURCE[0]}")")/ #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
+
+pushd "$_PGEM_LOC" > /dev/null
 
 . ./gemFunctions.sh
 
 _GEM_LIST=$(_gemList)
 
-_eachGem _loadPre       # load pre-config resources
+_eachGem _loadPre       # load pre-config resources - intentionally not included in template
 
 _eachGem _parseConf     # load config settings
 
@@ -33,15 +34,19 @@ popd > /dev/null
 
 if [ ! -z "$PS1" ]      # interactive shell
 then
-  pushd "$_GEMP_PATH" > /dev/null
+  pushd "$_PGEM_LOC" > /dev/null
   _eachGem _runCmd    # run interactive commands
   popd > /dev/null
   
-  if [ -d $START_DIR ]
+  if [ ! -z "$START_DIR" ]
   then
-    cd $START_DIR
-  else
-    echo "Start Dir $START_DIR Does Not Exist"
+    if [ -d $START_DIR ]
+    then
+      $_PGEM_DEBUG && echo "Switching from $(pwd) to $START_DIR"
+      cd $START_DIR
+    else
+      echo "Start Dir $START_DIR Does Not Exist"
+    fi
   fi
 fi
 
@@ -50,5 +55,5 @@ fi
 # Note aliases are not accessible if it's not an interactive shell
 if [ $# -gt 0 ]
 then
-  "$@"
+  eval "$@"
 fi

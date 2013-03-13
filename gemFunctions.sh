@@ -3,16 +3,18 @@
 # Used internally to prepare the profile, not meant to be called by the user
 #
 
+# Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
+# e.g. dispPath /home/username/ProfileGem/my.gem => 
 _dispPath()
 {
-  echo $(realpath "$@") | sed 's`^'"$_GEMP_PATH"'``'
+  echo $(realpath "$@") | sed 's`^'"$_PGEM_LOC"'``'
 }
 
 # Output the list of gems to load, in order
 # TODO could potentially construct some sort of gem dependancy graph, for now up to user to install and name in order
 _gemList()
 {
-  ls "$_GEMP_PATH" | grep '.*\.gem$'
+  ls "$_PGEM_LOC" | grep '.*\.gem$'
 }
 
 # Run "$@" in each gem
@@ -25,7 +27,7 @@ _eachGem()
       pushd $gem > /dev/null
       "$@"
       popd > /dev/null
-    elif $_GEMP_DEBUG
+    elif $_PGEM_DEBUG
     then
       echo $gem is not a directory.
       _GEM_LIST=$(echo $_GEM_LIST | sed 's`'$gem'``')
@@ -38,10 +40,8 @@ _srcIfExist()
 {
   if [ -f "$@" ]
   then
-    $_GEMP_DEBUG && echo "Including $(_dispPath $@)"
+    $_PGEM_DEBUG && echo "Including $(_dispPath $@)"
     . "$@"
-  else
-    $_GEMP_DEBUG && echo "Could not find $(_dispPath $@)"
   fi
 }
 
@@ -55,9 +55,8 @@ _loadPre()
 _parseConf()
 {
   _srcIfExist base.conf.sh
-  _srcIfExist ${HOSTNAME}.conf.sh
-  _srcIfExist ${USER}.conf.sh
-  _srcIfExist ${USER}.${HOSTNAME}.conf.sh
+  _srcIfExist hosts/${HOSTNAME}.conf.sh
+  _srcIfExist users/${USER}.conf.sh
   _srcIfExist local.conf.sh
 }
 

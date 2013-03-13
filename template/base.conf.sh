@@ -10,9 +10,8 @@
 # 
 # Looks for the following files, in order (later overrides earlier):
 #   base.conf
-#   ${HOSTNAME}.conf
-#   ${USER}.conf
-#   ${USER}.${HOSTNAME}.conf
+#   hosts/${HOSTNAME}.conf
+#   users/${USER}.conf
 #   local.conf
 #
 # This allows you to define username / hostname specific configuration settings
