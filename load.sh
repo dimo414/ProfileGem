@@ -30,23 +30,21 @@ _eachGem _loadEnv       # set environment variables
 _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
 
-popd > /dev/null
-
 if [ ! -z "$PS1" ]      # interactive shell
 then
-  pushd "$_PGEM_LOC" > /dev/null
   _eachGem _runCmd    # run interactive commands
-  popd > /dev/null
-  
-  if [ ! -z "$START_DIR" ]
+fi
+
+popd > /dev/null
+
+if [ ! -z "$START_DIR" ]
+then
+  if [ -d $START_DIR ]
   then
-    if [ -d $START_DIR ]
-    then
-      $_PGEM_DEBUG && echo "Switching from $(pwd) to $START_DIR"
-      cd $START_DIR
-    else
-      echo "Start Dir $START_DIR Does Not Exist"
-    fi
+    $_PGEM_DEBUG && echo "Switching from $(pwd) to $START_DIR"
+    cd $START_DIR
+  else
+    echo "Start Dir $START_DIR Does Not Exist"
   fi
 fi
 
