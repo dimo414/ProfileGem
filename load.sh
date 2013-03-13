@@ -33,16 +33,16 @@ popd > /dev/null
 
 if [ ! -z "$PS1" ]      # interactive shell
 then
-	pushd "$_GEMP_PATH" > /dev/null
-	_eachGem _runCmd    # run interactive commands
-	popd > /dev/null
-	
-	if [ -d $START_DIR ]
-	then
-		cd $START_DIR
-	else
-		echo "Start Dir $START_DIR Does Not Exist"
-	fi
+  pushd "$_GEMP_PATH" > /dev/null
+  _eachGem _runCmd    # run interactive commands
+  popd > /dev/null
+  
+  if [ -d $START_DIR ]
+  then
+    cd $START_DIR
+  else
+    echo "Start Dir $START_DIR Does Not Exist"
+  fi
 fi
 
 # Enable running a command in ProfileGem's scope
@@ -50,5 +50,5 @@ fi
 # Note aliases are not accessible if it's not an interactive shell
 if [ $# -gt 0 ]
 then
-	"$@"
+  "$@"
 fi
