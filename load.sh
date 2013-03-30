@@ -34,6 +34,7 @@ if [ ! -z "$PS1" ]      # interactive shell
 then
   _eachGem _runCmd    # run interactive commands
 fi
+$_PGEM_DEBUG && echo
 
 popd > /dev/null
 
@@ -41,7 +42,7 @@ if [ ! -z "$START_DIR" ]
 then
   if [ -d $START_DIR ]
   then
-    $_PGEM_DEBUG && echo "Switching from $(pwd) to $START_DIR"
+    $_PGEM_DEBUG && echo -e "Switching from $(pwd) to $START_DIR\n"
     cd $START_DIR
   else
     echo "Start Dir $START_DIR Does Not Exist"

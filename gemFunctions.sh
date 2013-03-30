@@ -9,20 +9,27 @@
 
 pgem_reload()
 {
-    PATH="$_PRE_PGEM_PATH"
-    pushd "$_PGEM_LOC" > /dev/null
-    . ./load.sh
-    popd > /dev/null
+  $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
+  PATH="$_PRE_PGEM_PATH"
+  pushd "$_PGEM_LOC" > /dev/null
+  . ./load.sh
+  popd > /dev/null
+  if $_PGEM_DEBUG
+  then
+    set | sort > /tmp/pgem_post.env
+    echo Environment Changes:
+    diff /tmp/pgem_pre.env /tmp/pgem_post.env
+  fi
 }
 
 pgem_update()
 {
-    echo "Updating ProfileGem"
-    pushd "$_PGEM_LOC" > /dev/null
-    _eachGem _updateGem
-    hg pull -u
-    popd > /dev/null
-    pgem_reload
+  echo "Updating ProfileGem"
+  pushd "$_PGEM_LOC" > /dev/null
+  _eachGem _updateGem
+  hg pull -u
+  popd > /dev/null
+  pgem_reload
 }
 
 #
@@ -33,6 +40,7 @@ pgem_update()
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
+  # realpath isn't standard on a lot of machines, consider something else
   echo $(realpath "$@") | sed 's`^'"$_PGEM_LOC"'``'
 }
 
@@ -64,13 +72,13 @@ _eachGem()
 # Updates the gem from the parent repository or other update script
 _updateGem()
 {
-    echo Updating $(_dispPath $(pwd))
-    if [ -f update.sh ]
-    then
-        ./update.sh
-    else
-        hg pull -u
-    fi
+  echo Updating $(_dispPath $(pwd))
+  if [ -f update.sh ]
+  then
+    ./update.sh
+  else
+    hg pull -u
+  fi
 }
 
 # Sources a file, skips if not
