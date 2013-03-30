@@ -1,2 +1,4 @@
-Reload all gems command                                      | owner:Michael, open:True, id:ccaf1421aebfd14bf23dee2dee26cf1b915b5567, time:1363977162.98
-Check for / pull in all updates                              | owner:Michael, open:True, id:ffe484c83a6a94d0793401b2d65da780eb389741, time:1363977180.78
+cron builder                                                 | owner:Michael, open:True, id:3f77b7885817bab37a6f739dadf414e33b9c1925, time:1364609187.2
+need to be able to define dependancies / ordering            | owner:Michael, open:True, id:4b0dbe8f433cc0f20fc214dae49c4a4a9498db3e, time:1364609115.78
+Reload all gems command                                      | owner:Michael, open:False, id:ccaf1421aebfd14bf23dee2dee26cf1b915b5567, time:1363977162.98
+Check for / pull in all updates                              | owner:Michael, open:False, id:ffe484c83a6a94d0793401b2d65da780eb389741, time:1363977180.78

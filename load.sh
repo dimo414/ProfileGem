@@ -11,7 +11,7 @@
 # you need immidiately on hand.
 #
 
-_PRE_PGEM_LOC="$PATH"
+_PRE_PGEM_PATH="$PATH"
 
 if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
 _PGEM_LOC=$(realpath "$(dirname "${BASH_SOURCE[0]}")")/ #  | sed 's`^'$HOME'`~`' to show ~ instead of $HOME
