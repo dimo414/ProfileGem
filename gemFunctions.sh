@@ -11,9 +11,9 @@ pgem_reload()
 {
   $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
   PATH="$_PRE_PGEM_PATH"
-  pushd "$_PGEM_LOC" > /dev/null
+  \pushd "$_PGEM_LOC" > /dev/null
   . ./load.sh
-  popd > /dev/null
+  \popd > /dev/null
   if $_PGEM_DEBUG
   then
     set | sort > /tmp/pgem_post.env
@@ -25,10 +25,10 @@ pgem_reload()
 pgem_update()
 {
   echo "Updating ProfileGem"
-  pushd "$_PGEM_LOC" > /dev/null
+  \pushd "$_PGEM_LOC" > /dev/null
   _eachGem _updateGem
   hg pull -u
-  popd > /dev/null
+  \popd > /dev/null
   pgem_reload
 }
 
@@ -58,9 +58,9 @@ _eachGem()
   do
     if [ -d $gem ]
     then
-      pushd $gem > /dev/null
+      \pushd $gem > /dev/null
       "$@"
-      popd > /dev/null
+      \popd > /dev/null
     elif $_PGEM_DEBUG
     then
       echo $gem is not a directory.
