@@ -29,6 +29,7 @@ _eachGem _parseConf     # load config settings
 _eachGem _loadEnv       # set environment variables
 _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
+_eachGem _loadScripts   # add scripts to path
 
 if [ ! -z "$PS1" ]      # interactive shell
 then

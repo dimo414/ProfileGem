@@ -124,6 +124,15 @@ _loadFuncs()
   _srcIfExist functions.sh
 }
 
+# Add scripts directory to PATH
+_loadScripts()
+{
+  if [ -d scripts ]
+  then
+    export PATH="$PATH:$(pwd)/scripts/"
+  fi
+}
+
 # Run commands
 _runCmd()
 {
