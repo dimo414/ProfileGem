@@ -24,10 +24,9 @@ pgem_reload()
 
 pgem_update()
 {
-  echo "Updating ProfileGem"
   \pushd "$_PGEM_LOC" > /dev/null
-  _eachGem _updateGem
-  hg pull -u
+  _eachGem _updateRepo
+  _updateRepo # update ProfileGem
   \popd > /dev/null
   pgem_reload
 }
@@ -69,15 +68,25 @@ _eachGem()
   done
 }
 
-# Updates the gem from the parent repository or other update script
-_updateGem()
+# Pulls in updates for the current directory, currently aware of Mercurial and Git
+# Alternatively create an update.sh script in the current directory to specify
+# custom update behavior
+_updateRepo()
 {
-  echo Updating $(_dispPath $(pwd))
+  dir=$(basename $(pwd))
+  echo Updating $dir
   if [ -f update.sh ]
   then
     ./update.sh
+  elif [ -d .hg ]
+  then
+    hg pull -u > /dev/null
+  elif [ -d .git ]
+  then
+    git pull --rebase > /dev/null
   else
-    hg pull -u
+    echo "Could not update $dir" >&2
+    return 1
   fi
 }
 
