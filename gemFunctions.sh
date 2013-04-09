@@ -35,12 +35,18 @@ pgem_update()
 # Private Functions
 #
 
+# Given a relative path, prints the absolute path
+_realpath()
+{
+  # realpath isn't standard on a lot of machines
+  which realpath > /dev/null && realpath "$@" || echo $(cd "$@" && pwd -P)
+}
+
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
-  # realpath isn't standard on a lot of machines, consider something else
-  echo $(realpath "$@") | sed 's`^'"$_PGEM_LOC"'``'
+  echo $(_realpath "$@") | sed 's`^'"$_PGEM_LOC"'``'
 }
 
 # Output the list of gems to load, in order
