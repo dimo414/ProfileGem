@@ -31,6 +31,44 @@ pgem_update()
   pgem_reload
 }
 
+# Cron Functions
+
+pgem_cron_out()
+{
+  load="$_PGEM_LOC/load.sh"
+  cronFile()
+  {
+    file="jobs.txt"
+    if [ -f $file ]
+    then
+      echo -f $(_realpath $file)
+    fi
+  }
+  files=$(_eachGem cronFile)
+  ./cronBuild.py -p "$load" $files $@ $PGEM_JOBS
+}
+
+pgem_cron_info()
+{
+  pgem_cron_out -i
+}
+
+pgem_cron_user()
+{
+  pgem_cron_out | crontab && echo "Successfully installed user crontab"
+}
+
+pgem_cron_etc()
+{
+  if [ -z $1 ]
+  then
+    path=/etc/cron.d/profileGem
+  else
+    path=$1
+  fi
+  pgem_cron_out -u - > $path
+}
+
 #
 # Private Functions
 #
@@ -46,7 +84,7 @@ _realpath()
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
-  echo $(_realpath "$@") | sed 's`^'"$_PGEM_LOC"'``'
+  echo $(_realpath "$@") | sed 's`^'"$_PGEM_LOC/"'``'
 }
 
 # Output the list of gems to load, in order
