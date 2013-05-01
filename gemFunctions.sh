@@ -45,7 +45,7 @@ pgem_cron_out()
     fi
   }
   files=$(_eachGem cronFile)
-  ./cronBuild.py -p "$load" $files $@ $PGEM_JOBS
+  $_PGEM_LOC/cronBuild.py -p "$load" $files $@ $PGEM_JOBS
 }
 
 pgem_cron_info()
@@ -66,7 +66,7 @@ pgem_cron_etc()
   else
     path=$1
   fi
-  pgem_cron_out -u - > $path
+  pgem_cron_out -u - > $path && echo "Successfully installed system crontab to $path"
 }
 
 #
@@ -97,6 +97,7 @@ _gemList()
 # Run "$@" in each gem
 _eachGem()
 {
+  pushd $_PGEM_LOC > /dev/null
   for gem in $_GEM_LIST
   do
     if [ -d $gem ]
@@ -110,6 +111,7 @@ _eachGem()
       _GEM_LIST=$(echo $_GEM_LIST | sed 's`'$gem'``')
     fi
   done
+  popd > /dev/null
 }
 
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
