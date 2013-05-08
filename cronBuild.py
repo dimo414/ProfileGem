@@ -28,7 +28,7 @@ class CronParse(object):
         if not line.strip():
           break;
       
-      self.lines = [CronLine(line) for line in file]
+      self.lines = [CronLine('## Jobs from %s' % file.name), CronLine('')] + [CronLine(line) for line in file]
   
   def jobs(self):
     return (line.job for line in self.lines if line.job)
