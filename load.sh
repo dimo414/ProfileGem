@@ -16,7 +16,7 @@ _PRE_PGEM_PATH="$PATH"
 if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
 _PGEM_LOC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P) # can't use _realpath yet
 
-\pushd "$_PGEM_LOC" > /dev/null
+pushd "$_PGEM_LOC" > /dev/null
 
 . ./gemFunctions.sh
 
@@ -35,7 +35,7 @@ then
 fi
 $_PGEM_DEBUG && echo
 
-\popd > /dev/null
+popd > /dev/null
 
 if [ ! -z "$START_DIR" ]
 then

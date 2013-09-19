@@ -11,9 +11,9 @@ pgem_reload()
 {
   $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
   PATH="$_PRE_PGEM_PATH"
-  \pushd "$_PGEM_LOC" > /dev/null
+  pushd "$_PGEM_LOC" > /dev/null
   . ./load.sh
-  \popd > /dev/null
+  popd > /dev/null
   if $_PGEM_DEBUG
   then
     set | sort > /tmp/pgem_post.env
@@ -24,10 +24,10 @@ pgem_reload()
 
 pgem_update()
 {
-  \pushd "$_PGEM_LOC" > /dev/null
+  pushd "$_PGEM_LOC" > /dev/null
   _eachGem _updateRepo
   _updateRepo # update ProfileGem
-  \popd > /dev/null
+  popd > /dev/null
   pgem_reload
 }
 
@@ -110,14 +110,14 @@ _gemList()
 # Run "$@" in each gem
 _eachGem()
 {
-  pushd $_PGEM_LOC > /dev/null
+  pushd "$_PGEM_LOC" > /dev/null
   for gem in $_GEM_LIST
   do
     if [ -d $gem ]
     then
-      \pushd $gem > /dev/null
+      pushd $gem > /dev/null
       "$@"
-      \popd > /dev/null
+      popd > /dev/null
     elif $_PGEM_DEBUG
     then
       echo $gem is not a directory.
