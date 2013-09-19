@@ -42,6 +42,7 @@ then
   if [ -d $START_DIR ]
   then
     $_PGEM_DEBUG && echo -e "Switching from $(pwd) to $START_DIR\n"
+    cd . # sets $OLDPWD to the starting directory, usually ~
     cd $START_DIR
   else
     echo "Start Dir $START_DIR Does Not Exist"
