@@ -87,11 +87,24 @@ _dispPath()
   echo $(_realpath "$@") | sed 's`^'"$_PGEM_LOC/"'``'
 }
 
+# Identifies the config file to read
+# Only one file is loaded, the first file that exists out of the below locations
+_CONFIG_FILE_LOCS=(local.conf.sh "config.d/users/${USER}.sh" "config.d/hosts/${HOSTNAME}.sh")
+_findConfigFile()
+{
+  for file in ${_CONFIG_FILE_LOCS[@]}
+  do
+    [ -f $file ] && echo $file && return 0
+  done
+  echo "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[@]}" >&2
+  return 1
+}
+  
+
 # Output the list of gems to load, in order
-# TODO could potentially construct some sort of gem dependancy graph, for now up to user to install and name in order
 _gemList()
 {
-  ls "$_PGEM_LOC" | grep '.*\.gem$'
+  grep '^#GEM' "$_PGEM_LOC/$(_findConfigFile)" | awk '{ print $2 ".gem" }'
 }
 
 # Run "$@" in each gem
@@ -136,7 +149,7 @@ _updateRepo()
   fi
 }
 
-# Sources a file, skips if not
+# Sources a file if it exists, skips if not
 _srcIfExist()
 {
   if [ -f "$@" ]
@@ -146,19 +159,16 @@ _srcIfExist()
   fi
 }
 
-# Load a file before configuration files are processed
-_loadPre()
-{
-  _srcIfExist pre.sh
-}
-
-# Parse configuration files
-_parseConf()
+# Initialize environment
+_loadBase()
 {
   _srcIfExist base.conf.sh
-  _srcIfExist hosts/${HOSTNAME}.conf.sh
-  _srcIfExist users/${USER}.conf.sh
-  _srcIfExist local.conf.sh
+}
+
+# Evaluates the config file
+_evalConfig()
+{
+  _srcIfExist $(_findConfigFile)
 }
 
 # Set environment variables
@@ -184,12 +194,13 @@ _loadScripts()
 {
   if [ -d scripts ]
   then
+    $_PGEM_DEBUG && echo "Adding $(pwd)/scripts/ to \$PATH"
     export PATH="$PATH:$(pwd)/scripts/"
   fi
 }
 
 # Run commands
-_runCmd()
+_loadCmds()
 {
   _srcIfExist commands.sh
 }

@@ -1,3 +1,5 @@
 glob:.project
 glob:.buildpath
+glob:local.conf.sh
+glob:conf.d
 re:.*\.gem/

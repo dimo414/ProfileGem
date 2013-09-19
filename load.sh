@@ -20,12 +20,10 @@ _PGEM_LOC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P) # can't use _realpath
 
 . ./gemFunctions.sh
 
-_GEM_LIST=$(_gemList)
+_GEM_LIST=$(_gemList)   # populates the list of gems
 
-_eachGem _loadPre       # load pre-config resources - intentionally not included in template
-
-_eachGem _parseConf     # load config settings
-
+_eachGem _loadBase      # initialize environment, executed before config file is parsed
+_evalConfig             # executes the commands in the config file
 _eachGem _loadEnv       # set environment variables
 _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
@@ -33,7 +31,7 @@ _eachGem _loadScripts   # add scripts to path
 
 if [ ! -z "$PS1" ]      # interactive shell
 then
-  _eachGem _runCmd    # run interactive commands
+  _eachGem _loadCmds    # run interactive commands
 fi
 $_PGEM_DEBUG && echo
 

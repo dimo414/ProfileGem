@@ -2,18 +2,9 @@
 # 
 # Default configuration file
 # 
-# A bash script to specify configuration settings
-# to be used by the rest of the gem.  These can be overridden by additional
-# configuration files, so avoid setting environment variables and the like
-# here, instead define values which environment.sh will then use after all
-# conf files have been loaded.
-# 
-# Looks for the following files, in order (later overrides earlier):
-#   base.conf
-#   hosts/${HOSTNAME}.conf
-#   users/${USER}.conf
-#   local.conf
-#
-# This allows you to define username / hostname specific configuration settings
-# which are tracked, or make temporary changes in local.conf, which should not be
+# Specifies defaults for values to be set by the user's local config file,
+# and is loaded before that file.  As these values can be overridden by
+# the local config file, avoid setting environment variables and the
+# like here, instead define values which environment.sh will then use
+# after the user's config file has been loaded.
 # 
