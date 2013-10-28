@@ -77,7 +77,7 @@ pgem_cron_etc()
 _realpath()
 {
   # realpath isn't standard on a lot of machines
-  which realpath > /dev/null && realpath "$@" || echo $(cd "$@" && pwd -P)
+  which realpath > /dev/null 2>&1 && realpath "$@" || echo $(readlink -f "$@")
 }
 
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
