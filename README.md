@@ -47,11 +47,37 @@ Once configured, there should be little you need to do with ProfileGem directly,
 ProfileGem includes a powerful cron deployment utility, allowing you to define jobs to be run per-gem, then configure which jobs should be included per machine, and generate crontabs dynamically.  Jobs are defined in a `jobs.txt` file in each gem, see below for more details on creating these files.
 
 * `PGEM_JOBS=...`: Set this to a space-separated list of jobs ProfileGem is aware of to include these jobs in ProfileGem's generated crontab.
-* `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the PATH variable to use, and the list of availible jobs to enable.
+* `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the PATH variable it will use, and the list of availible jobs to enable.
 * `pgem_cron_out`: Writes a crontab to stdout for easy review.
 * `pgem_cron_user`: Writes the ProfileGem cron jobs to the user's crontab, essentially `pgem_cron_out | crontab`.
-* `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the user's crontab.
+* `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the udisabled, however any jobs included in `$PGEM_JOBS` are enabled in the current machine.  This allows gens to define potentially complex jobs internally, letting individual machines/users easily enable the jobs they need.
 
-### Creating A Gem
+For example, suppose we define the following jobs:
 
+The `jobs.txt` files in all loaded gems are merged into one crontab file, configured to use the same path as the current environment.  All jobs by default are disabled, however any jobs included in `$PGEM_JOBS` are enabled in the current machine.  This allows gens to define potentially complex jobs internally, letting individual machines/users easily enable the jobs they need.  The `jobs.txt` file can also contain regular cronjobs, preceeded by a '#', or comments, preceeded by a '##'.
 
+For example, suppose we define the following jobs:
+
+    real-data  |  0 0 * * *  |  loadData real
+    test-data  |  0 0 * * *  |  loadData test
+    build      |  0 1 * * *  |  make clean all
+
+On our developement machine, we might set the following:
+
+    PGEM_JOBS="test-data build"
+
+Which would enable the `test-data` and `build` jobs but leave the `real-data` job disabled, while a more powerful test machine could conversely be configured to build with real data via:
+
+    PGEM_JOBS="real-data build"
+
+## Creating A Gem
+
+A gem template is availible in `ProfileGem/template`, to create your own, simply copy it to a `.gem` directory, e.g. `cp -R template myscripts.gem` - from there you can easily drop in your desired behavior into the appropriate files and have it automatically loaded up.  For more details on how to create a gem, particularly regarding how to ensure your gem interacts safely with other gems, see the README in the `template` directory, and the comments in the individual template files.
+
+* `base.conf.sh`: Holds default/base values for your gem
+* `environment.sh`: Configure the shell environment to use this gem; variables can be set and exported here
+* `aliases.sh`: Define shell aliases in this file
+* `functions.sh`: Define shell functions here, more powerful than alises, generally also availible to scripts
+* `commands.sh`: Commands and settings to be executed only when in an interactive shell
+* `jobs.txt`: Cronjobs to be loaded up and deployed by ProfileGem
+* 'scripts/`: Directory to be added to the path, can hold more complex/compartmentalized scripts that don't belong in `functions.sh`
