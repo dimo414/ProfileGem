@@ -80,4 +80,4 @@ A gem template is availible in `ProfileGem/template`, to create your own, simply
 * `functions.sh`: Define shell functions here, more powerful than alises, generally also availible to scripts
 * `commands.sh`: Commands and settings to be executed only when in an interactive shell
 * `jobs.txt`: Cronjobs to be loaded up and deployed by ProfileGem
-* 'scripts/`: Directory to be added to the path, can hold more complex/compartmentalized scripts that don't belong in `functions.sh`
+* `scripts/`: Directory to be added to the path, can hold more complex/compartmentalized scripts that don't belong in `functions.sh`
