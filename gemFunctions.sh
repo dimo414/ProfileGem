@@ -139,7 +139,10 @@ _updateRepo()
     ./update.sh
   elif [ -d .hg ]
   then
-    hg pull -u > /dev/null
+    # separate steps, so that we update even if pull doesn't
+    # find anything (i.e. someone pushed to this repo)
+    hg pull > /dev/null
+    hg up > /dev/null
   elif [ -d .git ]
   then
     git pull --rebase > /dev/null
