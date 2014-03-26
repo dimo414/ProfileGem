@@ -141,6 +141,7 @@ _updateRepo()
   then
     # separate steps, so that we update even if pull doesn't
     # find anything (i.e. someone pushed to this repo)
+    # FIXME this doesn't correctly prompt/exit if conflicts
     hg pull > /dev/null
     hg up > /dev/null
   elif [ -d .git ]
