@@ -41,6 +41,7 @@ Once configured, there should be little you need to do with ProfileGem directly,
 * `_PGEM_DEBUG=true`: Set this, either in `~/.bashr` or inline (e.g. `_PGEM_DEBUG=true ~/ProfileGem/load.sh`) to output debug messages related to ProfileGem.
 * `pgem_reload`: If you make a change to any of your gems or your config file, you can reload them by running `pgem_reload`.
 * `pgem_update`: Updates ProfileGem and all checked out gems from their parent repositories and reloads them.
+* `pgem_info`: Print basic usage information about each gem
 
 ### Crontabs
 
