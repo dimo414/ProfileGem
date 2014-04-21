@@ -31,6 +31,22 @@ pgem_update()
   pgem_reload
 }
 
+# TODO improve this
+pgem_info()
+{
+  echo Useful Commands:
+  _eachGem _printDoc info.txt
+  #echo 'Run `pgem_help` for more'
+}
+
+# TODO
+#pgem_help()
+#{
+#    _eachGem _printDoc info.txt
+#    echo
+#  _eachGem _printDoc help.txt
+#}
+
 # Cron Functions
 
 pgem_cron_out()
@@ -207,4 +223,14 @@ _loadScripts()
 _loadCmds()
 {
   _srcIfExist commands.sh
+}
+
+# Output doc file
+_printDoc()
+{
+  if [ -f $1 ]
+  then
+    $_PGEM_DEBUG && basename $(pwd)
+    cat $1
+  fi
 }

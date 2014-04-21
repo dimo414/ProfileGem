@@ -14,6 +14,7 @@
 _PRE_PGEM_PATH="$PATH"
 
 if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
+if [ -z "$PGEM_INFO_ON_START" ]; then PGEM_INFO_ON_START=false; fi
 _PGEM_LOC=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P) # can't use _realpath yet
 
 pushd "$_PGEM_LOC" > /dev/null
@@ -31,6 +32,10 @@ _eachGem _loadScripts   # add scripts to path
 
 if [ ! -z "$PS1" ]      # interactive shell
 then
+  if $PGEM_INFO_ON_START
+  then
+    pgem_info
+  fi
   _eachGem _loadCmds    # run interactive commands
 fi
 $_PGEM_DEBUG && echo
