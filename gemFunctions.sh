@@ -214,8 +214,8 @@ _loadScripts()
 {
   if [ -d scripts ]
   then
-    $_PGEM_DEBUG && echo "Adding $(pwd)/scripts/ to \$PATH"
-    export PATH="$PATH:$(pwd)/scripts/"
+    $_PGEM_DEBUG && echo "Adding $(pwd)/scripts to \$PATH"
+    export PATH="$(pwd)/scripts:$PATH"
   fi
 }
 
