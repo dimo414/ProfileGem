@@ -30,12 +30,12 @@ You can easily define self-contined behavior in a new gem and be up and running 
 
 The following files make up a standard gem, and are loaded in order into the shell:
 
-* `base.conf.sh`: This file should contain all necessary settings to initialize a barebones version of the gem.  Users will often look at the contents of this file to identify settings they can update in their `local.conf.sh` to enable further behavior.
+* `base.conf.sh`: This file should contain all necessary settings to initialize a barebones version of the gem.  Users will often look at the contents of this file to identify settings they can update in their `local.conf.sh` to enable further behavior.  Often consider using bash arrays here, so users (and other gems) can append to them.
 * `environment.sh`: This file is loaded up after the user's config file has been parsed, meaning we're now ready to start configuring the shell.  Use this file to manage or configure the shell state based on the user's settings.
 * `aliases.sh`: This file contains alises, either hard-coded or defined dynamically, such as by an array configured in the preceeding files.
-* `functions.sh`: Like `aliases.sh`, this file contains useful functions.  As functions are defined at load time, rather than execution time, it is genreally recommended that gem behavior be implemented in functions rather than standalone scripts.
+* `functions.sh`: Like `aliases.sh`, this file contains useful functions.  It is genreally recommended that gem behavior be implemented in functions rather than standalone scripts.
 * `scripts/`: This directory, if it exists, is added to the shell `$PATH`.
 * `commands.sh`: Unlike the preceeding files, which are always loaded into the shell, this file is only executed if the shell is interactive, i.e. a human using a terminal.
-* `jobs.txt`: File used to configure ProfileGem's deployable jobs, see inline comments for more.
+* `jobs.txt`: File used to configure ProfileGem's deployable jobs, see the comments in the template file for the appropriate syntax.
 
 

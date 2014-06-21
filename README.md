@@ -20,11 +20,11 @@ On its own, ProfileGem does (next to) nothing to your terminal.  Instead, you po
 
 1. Checkout ProfileGem to your machine (`~/ProfileGem` is suggested).
 
-1. Drop any gems you'd like to use into the ProfileGem directory.  A future update may allow for automatic checkouts, but presently you must create/checkout gems manually.  Once in place, they can be updated automatically by ProfileGem.  To start a new gem, copy the `template` directory to a new gem directory:
+1. Drop any gems you'd like to use into the ProfileGem directory.  A future update may allow for automatic checkouts, but presently you must create/checkout gems manually.  Once in place, they can be updated automatically by ProfileGem.  To create a new gem, copy the `template` directory to a new gem directory:
 
         cp -R template myshell.gem
 
-1. Copy `template.conf.sh` to `local.conf.sh` and open it, adding `#GEM` lines for any gems you have checked out, e.g. `#GEM myshell`.  Add any local environment variables to configure your gems here.
+1. Copy `template.conf.sh` to `local.conf.sh` and edit it, adding `#GEM` lines for any gems you have checked out, e.g. `#GEM myshell`.  Add any local environment variables to configure your gems here.
 
 1. Run `~/ProfileGem/load.sh` and confirm no errors / unexpected output.  You can alternatively run `_PGEM_DEBUG=true ~/ProfileGem/load.sh` to get more detailed output, including listing all files which are loaded.
 
@@ -32,53 +32,38 @@ On its own, ProfileGem does (next to) nothing to your terminal.  Instead, you po
 
         . ~/ProfileGem/load.sh
 
-    And you're good to go!  Your next shell instance will load ProfileGem at start.  Execute the above command in your current shell to drop ProfileGem in where you are.
+    And you're good to go!  Your next shell instance will load ProfileGem at start.  You can also execute the above command in a running shell to load ProfileGem manually, for instance to temporarily deploy your shell on another machine.
 
 ## Using ProfileGem
 
 Once configured, there should be little you need to do with ProfileGem directly, however there are some utilities worth knowing about:
 
 * `_PGEM_DEBUG=true`: Set this, either in `~/.bashr` or inline (e.g. `_PGEM_DEBUG=true ~/ProfileGem/load.sh`) to output debug messages related to ProfileGem.
-* `pgem_reload`: If you make a change to any of your gems or your config file, you can reload them by running `pgem_reload`.
+* `pgem_reload`: If you make a change to any of your gems or your config file, you can reload it by running `pgem_reload`.
 * `pgem_update`: Updates ProfileGem and all checked out gems from their parent repositories and reloads them.
-* `pgem_info`: Print basic usage information about each gem
+* `pgem_info`: Print basic usage information about each gem, this needs more functionality
+
+### Customizing With `local.conf.sh`
+
+In addition to specifying the gems to load (and their order), `local.conf.sh` lets you customize the behavior of gems.  Each gem defines a `base.conf.sh` file which contains default values you can update in your `local.conf.sh`.  For instance, a gem might configure your terminal prompt, but allow the user to specify the hostname's color; rather than needing to manually modify `$PS1` on each machine, your `local.conf.sh` might look like this:
+
+    #GEM myshell
+    HOST_COLOR=RED
+
+Now `myshell.gem` will actually configure the `$PS1`, but use the locally specified `$HOST_COLOR`.
 
 ### Crontabs
 
-ProfileGem includes a powerful cron deployment utility, allowing you to define jobs to be run per-gem, then configure which jobs should be included per machine, and generate crontabs dynamically.  Jobs are defined in a `jobs.txt` file in each gem, see below for more details on creating these files.
+ProfileGem includes an extensible cron deployment utility, allowing you to define useful jobs per-gem, then configure which jobs should be run per machine, and generate crontabs dynamically.
 
 * `PGEM_JOBS=...`: Set this to a space-separated list of jobs ProfileGem is aware of to include these jobs in ProfileGem's generated crontab.
 * `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the PATH variable it will use, and the list of availible jobs to enable.
-* `pgem_cron_out`: Writes a crontab to stdout for easy review.
+* `pgem_cron_out`: Prints the crontab to stdout for easy review.
 * `pgem_cron_user`: Writes the ProfileGem cron jobs to the user's crontab, essentially `pgem_cron_out | crontab`.
-* `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the udisabled, however any jobs included in `$PGEM_JOBS` are enabled in the current machine.  This allows gens to define potentially complex jobs internally, letting individual machines/users easily enable the jobs they need.
+* `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the users crontab.
 
-For example, suppose we define the following jobs:
-
-The `jobs.txt` files in all loaded gems are merged into one crontab file, configured to use the same path as the current environment.  All jobs by default are disabled, however any jobs included in `$PGEM_JOBS` are enabled in the current machine.  This allows gens to define potentially complex jobs internally, letting individual machines/users easily enable the jobs they need.  The `jobs.txt` file can also contain regular cronjobs, preceeded by a '#', or comments, preceeded by a '##'.
-
-For example, suppose we define the following jobs:
-
-    real-data  |  0 0 * * *  |  loadData real
-    test-data  |  0 0 * * *  |  loadData test
-    build      |  0 1 * * *  |  make clean all
-
-On our developement machine, we might set the following:
-
-    PGEM_JOBS="test-data build"
-
-Which would enable the `test-data` and `build` jobs but leave the `real-data` job disabled, while a more powerful test machine could conversely be configured to build with real data via:
-
-    PGEM_JOBS="real-data build"
+By default, all jobs are disabled, however any jobs specified in `$PGEM_JOBS` will be enabled for the current machine.  This allows gems to define complex or conflicting jobs internally, and let individual machines/users easily enable the jobs they need.
 
 ## Creating A Gem
 
-A gem template is availible in `ProfileGem/template`, to create your own, simply copy it to a `.gem` directory, e.g. `cp -R template myscripts.gem` - from there you can easily drop in your desired behavior into the appropriate files and have it automatically loaded up.  For more details on how to create a gem, particularly regarding how to ensure your gem interacts safely with other gems, see the README in the `template` directory, and the comments in the individual template files.
-
-* `base.conf.sh`: Holds default/base values for your gem
-* `environment.sh`: Configure the shell environment to use this gem; variables can be set and exported here
-* `aliases.sh`: Define shell aliases in this file
-* `functions.sh`: Define shell functions here, more powerful than alises, generally also availible to scripts
-* `commands.sh`: Commands and settings to be executed only when in an interactive shell
-* `jobs.txt`: Cronjobs to be loaded up and deployed by ProfileGem
-* `scripts/`: Directory to be added to the path, can hold more complex/compartmentalized scripts that don't belong in `functions.sh`
+A gem template is availible in `ProfileGem/template`, to create your own, simply copy it to a `.gem` directory, e.g. `cp -R template myscripts.gem` - you can easily drop your desired behavior into the appropriate files of your new gem and (after updating `local.conf.sh`) ProfileGem will load it.  For more details on how to create a gem, particularly regarding how to ensure your gem interacts safely with other gems, see the [README](/profilegem/src/tip/template/README.md) in the `template` directory, and the comments in the individual template files.
