@@ -57,7 +57,7 @@ pgem_cron_out()
     file="jobs.txt"
     if [ -f $file ]
     then
-      echo -f $(_realpath $file)
+      echo -f $(readlink -f $file)
     fi
   }
   files=$(_eachGem cronFile)
@@ -89,18 +89,11 @@ pgem_cron_etc()
 # Private Functions
 #
 
-# Given a relative path, prints the absolute path
-_realpath()
-{
-  # realpath isn't standard on a lot of machines
-  which realpath > /dev/null 2>&1 && realpath "$@" || echo $(readlink -f "$@")
-}
-
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
-  echo $(_realpath "$@") | sed 's`^'"$_PGEM_LOC/"'``'
+  readlink -f "$@" | sed 's`^'"$_PGEM_LOC/"'``'
 }
 
 # Identifies the config file to read
@@ -185,7 +178,7 @@ _loadBase()
   _srcIfExist base.conf.sh
 }
 
-# Evaluates the config file
+# Evaluates the config file - not called by _eachGem
 _evalConfig()
 {
   _srcIfExist $(_findConfigFile)
