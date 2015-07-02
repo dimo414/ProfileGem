@@ -3,4 +3,4 @@ glob:.buildpath
 glob:.pydevproject
 glob:local.conf.sh
 glob:conf.d
-re:.*\.gem/
+re:.*\.gem
