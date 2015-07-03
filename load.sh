@@ -12,6 +12,8 @@
 #
 
 _PRE_PGEM_PATH="$PATH"
+_PRE_PGEM_PS1="$PS1"
+_PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 
 if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
 if [ -z "$PGEM_INFO_ON_START" ]; then PGEM_INFO_ON_START=false; fi

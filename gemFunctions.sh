@@ -11,14 +11,19 @@ pgem_reload()
 {
   $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
   PATH="$_PRE_PGEM_PATH"
+  PS1="$_PRE_PGEM_PS1"
+  PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
+  
   pushd "$_PGEM_LOC" > /dev/null
   . ./load.sh
   popd > /dev/null
+  
   if $_PGEM_DEBUG
   then
     set | sort > /tmp/pgem_post.env
     echo Environment Changes:
-    diff /tmp/pgem_pre.env /tmp/pgem_post.env
+    comm -3 /tmp/pgem_pre.env /tmp/pgem_post.env |
+      sed -e 's`^[^\t]`- \0`' -e 's`^\t`+ `'
   fi
 }
 
@@ -51,16 +56,16 @@ pgem_info()
 
 pgem_cron_out()
 {
-  load="$_PGEM_LOC/load.sh"
+  local load="$_PGEM_LOC/load.sh"
   cronFile()
   {
-    file="jobs.txt"
+    local file="jobs.txt"
     if [ -f $file ]
     then
       echo -f $(readlink -f $file)
     fi
   }
-  files=$(_eachGem cronFile)
+  local files=$(_eachGem cronFile)
   $_PGEM_LOC/cronBuild.py -p "$load" $files $@ $PGEM_JOBS
 }
 
@@ -78,9 +83,9 @@ pgem_cron_etc()
 {
   if [ -z $1 ]
   then
-    path=/etc/cron.d/profileGem
+    local path=/etc/cron.d/profileGem
   else
-    path=$1
+    local path=$1
   fi
   pgem_cron_out -u - > $path && echo "Successfully installed system crontab to $path"
 }
@@ -101,6 +106,7 @@ _dispPath()
 _CONFIG_FILE_LOCS=(local.conf.sh "config.d/users/${USER}.sh" "config.d/hosts/${HOSTNAME}.sh")
 _findConfigFile()
 {
+  local file
   for file in ${_CONFIG_FILE_LOCS[@]}
   do
     [ -f $file ] && echo $file && return 0
@@ -120,6 +126,7 @@ _gemList()
 _eachGem()
 {
   pushd "$_PGEM_LOC" > /dev/null
+  local gem
   for gem in $_GEM_LIST
   do
     if [ -d $gem ]
@@ -141,7 +148,7 @@ _eachGem()
 # custom update behavior
 _updateRepo()
 {
-  dir=$(basename $(pwd))
+  local dir=$(basename $(pwd))
   echo Updating $dir
   if [ -f update.sh ]
   then
