@@ -16,7 +16,7 @@ pgem_reload()
   
   pushd "$_PGEM_LOC" > /dev/null
   . ./load.sh
-  ret=$?
+  local ret=$?
   popd > /dev/null
   
   if $_PGEM_DEBUG
