@@ -26,11 +26,13 @@ pgem_reload()
     comm -3 /tmp/pgem_pre.env /tmp/pgem_post.env |
       sed -e 's`^[^\t]`- \0`' -e 's`^\t`+ `'
   fi
+  unset _PGEM_LOAD_EXIT_CODE
   return $ret
 }
 
 pgem_update()
 {
+  _PGEM_LOAD_EXIT_CODE=0
   pushd "$_PGEM_LOC" > /dev/null
   _eachGem _updateRepo
   _updateRepo # update ProfileGem
@@ -135,7 +137,7 @@ _eachGem()
     then
       pushd $gem > /dev/null
       "$@"
-      exit=$? && [[ $exit != 0 ]] && _PGEM_LOAD_EXIT_CODE=$exit
+      local exit=$? && [[ $exit != 0 ]] && _PGEM_LOAD_EXIT_CODE=$exit
       popd > /dev/null
     elif $_PGEM_DEBUG
     then

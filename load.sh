@@ -17,10 +17,10 @@ _PRE_PGEM_PATH="$PATH"
 _PRE_PGEM_PS1="$PS1"
 _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 
-if [ -z "$_PGEM_DEBUG" ]; then _PGEM_DEBUG=false; fi
-if [ -z "$PGEM_INFO_ON_START" ]; then PGEM_INFO_ON_START=false; fi
+[ -z "$PGEM_INFO_ON_START" ] && PGEM_INFO_ON_START=false
+[ -z "$_PGEM_DEBUG" ] && _PGEM_DEBUG=false
+[ -z "$_PGEM_LOAD_EXIT_CODE" ] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
-_PGEM_LOAD_EXIT_CODE=0
 
 pushd "$_PGEM_LOC" > /dev/null
 
