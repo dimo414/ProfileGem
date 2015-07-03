@@ -16,6 +16,7 @@ pgem_reload()
   
   pushd "$_PGEM_LOC" > /dev/null
   . ./load.sh
+  ret=$?
   popd > /dev/null
   
   if $_PGEM_DEBUG
@@ -25,6 +26,7 @@ pgem_reload()
     comm -3 /tmp/pgem_pre.env /tmp/pgem_post.env |
       sed -e 's`^[^\t]`- \0`' -e 's`^\t`+ `'
   fi
+  return $ret
 }
 
 pgem_update()
@@ -133,6 +135,7 @@ _eachGem()
     then
       pushd $gem > /dev/null
       "$@"
+      exit=$? && [[ $exit != 0 ]] && _PGEM_LOAD_EXIT_CODE=$exit
       popd > /dev/null
     elif $_PGEM_DEBUG
     then
@@ -149,6 +152,11 @@ _eachGem()
 _updateRepo()
 {
   local dir=$(basename $(pwd))
+  if [ -f noupdate ]
+  then
+    echo Not updating $dir
+    return
+  fi
   echo Updating $dir
   if [ -f update.sh ]
   then
