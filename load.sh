@@ -11,6 +11,8 @@
 # you need immidiately on hand.
 #
 
+START_DIR=
+
 _PRE_PGEM_PATH="$PATH"
 _PRE_PGEM_PS1="$PS1"
 _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
@@ -44,15 +46,15 @@ $_PGEM_DEBUG && echo
 
 popd > /dev/null
 
-if [ ! -z "$START_DIR" ]
+if [ -n "$START_DIR" ]
 then
-  if [ -d $START_DIR ]
+  if [ -d "$START_DIR" ]
   then
     $_PGEM_DEBUG && echo -e "Switching from $(pwd) to $START_DIR\n"
     cd . # sets $OLDPWD to the starting directory, usually ~
     cd $START_DIR
   else
-    echo "Start Dir $START_DIR Does Not Exist"
+    echo "Start dir $START_DIR does not exist!"
   fi
 fi
 
