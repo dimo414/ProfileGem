@@ -2,7 +2,7 @@
 
 *A shell configuration utility to compartmentalize and deploy terminal utilities and state*
 
-ProfileGem provides a structured way to configure your terminal, as a more robust alternative to editing `.bashrc` or `.bash_profile`.  At a basic level, it provides structured files to define aliases, functions, environment variables, commands to execute at login, and cron jobs.  More powefully, this behavior can be split into separate directories, called gems, to compartmentalize and customize shells based on the needs of the user/machine being used.
+ProfileGem provides a structured way to configure your terminal, as a more robust alternative to editing `.bashrc` or `.bash_profile`.  At a basic level, it provides structured files to define aliases, functions, environment variables, commands to execute at login, and cron jobs.  More powerfully, this behavior can be split into separate directories, called gems, to compartmentalize and customize shells based on the needs of the user/machine being used.
 
 On its own, ProfileGem does (next to) nothing to your terminal.  Instead, you point it to one or more gems which contain the configuration settings you need.  These gems are executed in a defined order as your shell starts up, allowing you to create a custom shell experienced based on exactly the functionality you need.
 
@@ -57,7 +57,7 @@ Now `myshell.gem` will actually configure the `$PS1`, but use the locally specif
 ProfileGem includes an extensible cron deployment utility, allowing you to define useful jobs per-gem, then configure which jobs should be run per machine, and generate crontabs dynamically.
 
 * `PGEM_JOBS=...`: Set this to a space-separated list of jobs ProfileGem is aware of to include these jobs in ProfileGem's generated crontab.
-* `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the PATH variable it will use, and the list of availible jobs to enable.
+* `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the PATH variable it will use, and the list of available jobs to enable.
 * `pgem_cron_out`: Prints the crontab to stdout for easy review.
 * `pgem_cron_user`: Writes the ProfileGem cron jobs to the user's crontab, essentially `pgem_cron_out | crontab`.
 * `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the users crontab.
@@ -66,4 +66,21 @@ By default, all jobs are disabled, however any jobs specified in `$PGEM_JOBS` wi
 
 ## Creating A Gem
 
-A gem template is availible in `ProfileGem/template`, to create your own, simply copy it to a `.gem` directory, e.g. `cp -R template myscripts.gem` - you can easily drop your desired behavior into the appropriate files of your new gem and (after updating `local.conf.sh`) ProfileGem will load it.  For more details on how to create a gem, particularly regarding how to ensure your gem interacts safely with other gems, see the [README](/profilegem/src/tip/template/README.md) in the `template` directory, and the comments in the individual template files.
+A gem template is available in `ProfileGem/template`, to create your own, simply copy it to a `.gem` directory, e.g. `cp -R template myscripts.gem` - you can easily drop your desired behavior into the appropriate files of your new gem and (after updating `local.conf.sh`) ProfileGem will load it.  For more details on how to create a gem, particularly regarding how to ensure your gem interacts safely with other gems, see the [README](/template/README.md) in the `template` directory, and the comments in the individual template files.
+
+## Copyright
+
+Copyright 2013-2015 Michael Diamond
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
