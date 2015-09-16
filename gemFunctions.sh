@@ -66,7 +66,7 @@ pgem_cron_out()
     local file="jobs.txt"
     if [ -f $file ]
     then
-      echo -f $(readlink -f $file)
+      echo -f $(_realpath $file)
     fi
   }
   local files=$(_eachGem cronFile)
@@ -98,11 +98,26 @@ pgem_cron_etc()
 # Private Functions
 #
 
+# Given a relative path, prints an absolute path
+_realpath()
+{
+  if which realpath > /dev/null 2>&1
+  then
+    realpath "$@"
+  else
+    # readlink -f doesn't exist on OSX, so can't use readlink
+    cd "$@"
+    pwd
+    cd -
+  fi
+}
+  
+
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
-  readlink -f "$@" | sed 's`^'"$_PGEM_LOC/"'``'
+  _realpath "$@" | sed 's`^'"$_PGEM_LOC/"'``'
 }
 
 # Identifies the config file to read

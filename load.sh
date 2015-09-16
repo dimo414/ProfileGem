@@ -20,7 +20,7 @@ _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 [ -z "$PGEM_INFO_ON_START" ] && PGEM_INFO_ON_START=false
 [ -z "$_PGEM_DEBUG" ] && _PGEM_DEBUG=false
 [ -z "$_PGEM_LOAD_EXIT_CODE" ] && _PGEM_LOAD_EXIT_CODE=0
-_PGEM_LOC="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
 
 pushd "$_PGEM_LOC" > /dev/null
 
