@@ -94,6 +94,23 @@ pgem_cron_etc()
   pgem_cron_out -u - > $path && echo "Successfully installed system crontab to $path"
 }
 
+# Copies a function f to _orig_f, letting callers redefine (or decorate) f
+# http://stackoverflow.com/q/1203583
+#
+# Suggested usage:
+#
+#   pgem_decorate func &&
+#   func() {
+#     ...
+#   }
+#
+# This prevents func from being (re)defined if it didn't previously exist.
+pgem_decorate()
+{
+  declare -F $1 > /dev/null || { echo No such function $1; return 1; }
+  eval "$(echo "_orig_${1}()"; declare -f ${1} | tail -n +2)"
+}
+
 #
 # Private Functions
 #
