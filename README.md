@@ -1,10 +1,11 @@
 # ProfileGem
 
-*A shell configuration utility to compartmentalize and manage your terminal utilities and state*
+*A shell configuration utility to compartmentalize and manage your terminal utilities and
+environment*
 
 ProfileGem provides a structured way to configure your terminal, as a more robust alternative to
-editing `.bashrc` or `.bash_profile`.  At a basic level, it provides structured files to define
-aliases, functions, environment variables, commands to execute at login, and cron jobs. More
+editing `.bashrc` or `.bash_profile` directly. At a basic level, it provides structured files to
+define aliases, functions, environment variables, commands to execute at login, and cron jobs. More
 powerfully, this behavior can be split into separate parts, called gems, to compartmentalize and
 customize your environment based on the needs of the user/machine being used.
 
@@ -100,6 +101,12 @@ per-gem, then configure which jobs should be run per machine, and generate cront
 By default all jobs are disabled, however any jobs specified in `$PGEM_JOBS` will be enabled for
 the current machine. This allows gems to define complex or potentially conflicting jobs, and let
 individual installations easily enable the jobs they need.
+
+## Public Gems
+
+Some gems you can install right away:
+
+* [prompt.gem](https://bitbucket.org/dimo414/prompt.gem): a simple but extensible prompt.
 
 ## Creating A Gem
 
