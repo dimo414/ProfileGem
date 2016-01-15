@@ -51,8 +51,8 @@ pgem_info()
 # TODO
 #pgem_help()
 #{
-#    _eachGem _printDoc info.txt
-#    echo
+#  _eachGem _printDoc info.txt
+#  echo
 #  _eachGem _printDoc help.txt
 #}
 
@@ -104,16 +104,30 @@ pgem_cron_etc()
 #     ...
 #   }
 #
-# This prevents func from being (re)defined if it didn't previously exist.
+# The && prevents func from being (re)defined if it didn't previously exist.
 pgem_decorate()
 {
-  declare -F $1 > /dev/null || { echo No such function $1; return 1; }
-  eval "$(echo "_orig_${1}()"; declare -f ${1} | tail -n +2)"
+  local func="${1:?Must provide a function name to decorate}"
+  local prefix="${2:-_orig_}"
+if declare -F ${prefix}${func} >& /dev/null
+  then
+    # This function has previously been decorated; restore the original version
+    _copy_function ${prefix}${func} ${func}
+  fi
+  _copy_function ${func} ${prefix}${func}
 }
 
 #
 # Private Functions
 #
+
+# Given a name and an existing function, create a new function called name that
+# executes the same commands as the initial function
+_copy_function()
+{
+  declare -F ${1:?Missing function} >& /dev/null || { echo No such function $1; return 1; }
+  eval "$(echo "${2:?Missing function name}()"; declare -f ${1} | tail -n +2)"
+}
 
 # Given a relative path, prints an absolute path
 _realpath()
