@@ -3,14 +3,15 @@
 *A shell configuration utility to compartmentalize and manage your terminal utilities and
 environment*
 
-ProfileGem provides a structured way to configure your terminal, as a more robust alternative to
-editing `.bashrc` or `.bash_profile` directly. At a basic level, it provides structured files to
-define aliases, functions, environment variables, commands to execute at login, and cron jobs. More
-powerfully, this behavior can be split into separate parts, called gems, to compartmentalize and
-customize your environment based on the needs of the user/machine being used.
+ProfileGem provides a structured and modular way to configure your terminal, as a more robust
+alternative to editing `.bashrc` or `.bash_profile` directly. At a basic level, it uses dedicated
+files to define aliases, functions, environment variables, commands to execute at login, and cron
+jobs. More powerfully, this behavior can be split into separate parts, called gems, to
+compartmentalize and customize your environment based on the needs of the user/machine being used.
 
-On its own, ProfileGem does (next to) nothing to your terminal. Instead, you install one or more
-gems alongside it which are then loaded by ProfileGem to customize your environment.
+On its own ProfileGem doesn't change your environment in any way (excluding adding some ProfileGem
+utility functions). Instead, you create or install one or more gems alongside it which are then
+loaded by ProfileGem to customize your environment just the way you want it.
 
 ---
 
@@ -119,7 +120,7 @@ directory, and the comments in the individual template files.
 
 ## Copyright and License
 
-Copyright 2013-2012 Michael Diamond
+Copyright 2016-2012 Michael Diamond
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
