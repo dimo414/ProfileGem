@@ -24,7 +24,8 @@ _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpa
 
 pushd "$_PGEM_LOC" > /dev/null
 
-. ./gemFunctions.sh
+source ./gemFunctions.sh
+source ./privateGemFunctions.sh
 
 _GEM_LIST=$(_gemList)   # populates the list of gems
 
