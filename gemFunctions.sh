@@ -102,30 +102,3 @@ pgem_cron_etc()
   pgem_cron_out -u - > $path && echo "Successfully installed system crontab to $path"
 }
 
-#
-# Gem Utilities
-#
-
-# Copies a function f to _orig_f, letting callers redefine (or decorate) f
-# http://stackoverflow.com/q/1203583
-#
-# Suggested usage:
-#
-#   pgem_decorate func &&
-#   func() {
-#     ...
-#   }
-#
-# The && prevents func from being (re)defined if it didn't previously exist.
-pgem_decorate()
-{
-  local func="${1:?Must provide a function name to decorate}"
-  local prefix="${2:-_orig_}"
-if declare -F ${prefix}${func} >& /dev/null
-  then
-    # This function has previously been decorated; restore the original version
-    _copy_function ${prefix}${func} ${func}
-  fi
-  _copy_function ${func} ${prefix}${func}
-}
-
