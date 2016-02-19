@@ -15,7 +15,7 @@ _copy_function()
 # Given a relative path, prints an absolute path
 _realpath()
 {
-  if which realpath > /dev/null 2>&1
+  if command -v realpath >& /dev/null
   then
     realpath "$@"
   else
