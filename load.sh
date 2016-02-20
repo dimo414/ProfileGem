@@ -51,6 +51,7 @@ popd > /dev/null
 
 if [ -n "$START_DIR" ]
 then
+  # shellcheck disable=SC2164
   if [ -d "$START_DIR" ]
   then
     $_PGEM_DEBUG && echo -e "Switching from $(pwd) to $START_DIR\n"

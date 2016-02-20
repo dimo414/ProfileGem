@@ -10,7 +10,7 @@ _copy_function()
 {
   local function="${1:?Missing function}"
   local new_name="${2:?Missing new function name}"
-  declare -F "$function" >& /dev/null || { echo No such function $1; return 1; }
+  declare -F "$function" >& /dev/null || { echo "No such function $1"; return 1; }
   eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
 }
 
@@ -22,9 +22,7 @@ _realpath()
     realpath "$@"
   else
     # readlink -f doesn't exist on OSX, so can't use readlink
-    cd "$@"
-    pwd
-    cd -
+    (cd "$@" && pwd)
   fi
 }
   
@@ -33,7 +31,7 @@ _realpath()
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath()
 {
-  _realpath "$@" | sed 's`^'"$_PGEM_LOC/"'``'
+  _realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
 }
 
 # Identifies the config file to read
@@ -42,16 +40,17 @@ _CONFIG_FILE_LOCS=(local.conf.sh "config.d/users/${USER}.sh" "config.d/hosts/${H
 _findConfigFile()
 {
   local file
-  for file in ${_CONFIG_FILE_LOCS[@]}
+  for file in "${_CONFIG_FILE_LOCS[@]}"
   do
-    [ -f $file ] && echo $file && return 0
+    [ -f "$file" ] && echo "$file" && return 0
   done
-  echo "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[@]}" >&2
+  echo "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}" >&2
   return 1
 }
   
 
 # Output the list of gems to load, in order
+# TODO this should populate a global array rather than echo a space-delimited string
 _gemList()
 {
   grep '^#GEM' "$_PGEM_LOC/$(_findConfigFile)" | awk '{ print $2 ".gem" }'
@@ -64,16 +63,16 @@ _eachGem()
   local gem
   for gem in $_GEM_LIST
   do
-    if [ -d $gem ]
+    if [ -d "$gem" ]
     then
-      pushd $gem > /dev/null
+      pushd "$gem" > /dev/null
       "$@"
       local exit=$? && [[ $exit != 0 ]] && _PGEM_LOAD_EXIT_CODE=$exit
       popd > /dev/null
     elif $_PGEM_DEBUG
     then
-      echo $gem is not a directory.
-      _GEM_LIST=$(echo $_GEM_LIST | sed 's`'$gem'``')
+      echo "$gem is not a directory."
+      _GEM_LIST=${_GEM_LIST//$gem/}
     fi
   done
   popd > /dev/null
@@ -84,13 +83,14 @@ _eachGem()
 # custom update behavior
 _updateRepo()
 {
-  local dir=$(basename $(pwd))
+  local dir
+  dir=$(basename "$(pwd)")
   if [ -f noupdate ]
   then
-    echo Not updating $dir
+    echo "Not updating $dir"
     return
   fi
-  echo Updating $dir
+  echo "Updating $dir"
   if [ -f update.sh ]
   then
     ./update.sh
@@ -115,7 +115,8 @@ _srcIfExist()
 {
   if [ -f "$@" ]
   then
-    $_PGEM_DEBUG && echo "Including $(_dispPath $@)"
+    $_PGEM_DEBUG && echo "Including $(_dispPath "$@")"
+    # shellcheck disable=SC1090
     . "$@"
   fi
 }
@@ -129,7 +130,7 @@ _loadBase()
 # Evaluates the config file - not called by _eachGem
 _evalConfig()
 {
-  _srcIfExist $(_findConfigFile)
+  _srcIfExist "$(_findConfigFile)"
 }
 
 # Set environment variables
@@ -156,6 +157,7 @@ _loadScripts()
   if [ -d scripts ]
   then
     $_PGEM_DEBUG && echo "Adding $(pwd)/scripts to \$PATH"
+    # shellcheck disable=SC2155
     export PATH="$(pwd)/scripts:$PATH"
   fi
 }
@@ -169,9 +171,9 @@ _loadCmds()
 # Output doc file
 _printDoc()
 {
-  if [ -f $1 ]
+  if [ -f "$1" ]
   then
-    $_PGEM_DEBUG && basename $(pwd)
-    cat $1
+    $_PGEM_DEBUG && basename "$(pwd)"
+    cat "$1"
   fi
 }

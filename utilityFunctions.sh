@@ -21,9 +21,9 @@ pgem_decorate()
 if declare -F ${prefix}${func} >& /dev/null
   then
     # This function has previously been decorated; restore the original version
-    _copy_function ${prefix}${func} ${func}
+    _copy_function "${prefix}${func}" "${func}"
   fi
-  _copy_function ${func} ${prefix}${func}
+  _copy_function "${func}" "${prefix}${func}"
 }
 
 # Prompt the user to confirm (y/n), defaulting to no.

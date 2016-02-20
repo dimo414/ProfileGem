@@ -25,7 +25,7 @@ pgem_reload()
     set | sort > /tmp/pgem_post.env
     echo Environment Changes:
     comm -3 /tmp/pgem_pre.env /tmp/pgem_post.env |
-      sed -e 's`^[^\t]`- \0`' -e 's`^\t`+ `'
+      sed -e 's|^[^\t]|- \0|' -e 's|^\t|+ |'
   fi
   unset _PGEM_LOAD_EXIT_CODE
   return $ret
@@ -66,16 +66,20 @@ pgem_info()
 pgem_cron_out()
 {
   local load="$_PGEM_LOC/load.sh"
+  # TODO this still defines a global function; rename or remove
   cronFile()
   {
     local file="jobs.txt"
     if [ -f $file ]
     then
-      echo -f $(_realpath $file)
+      echo "-f $(_realpath $file)"
     fi
   }
-  local files=$(_eachGem cronFile)
-  $_PGEM_LOC/cronBuild.py -p "$load" $files $@ $PGEM_JOBS
+  local files
+  files=$(_eachGem cronFile)
+  # TODO resolve this shellcheck warning
+  # shellcheck disable=SC2086
+  "$_PGEM_LOC/cronBuild.py" -p "$load" $files "$@" $PGEM_JOBS
 }
 
 # Prints information about the available jobs
@@ -93,12 +97,12 @@ pgem_cron_user()
 # Writes the ProfileGem crontab to /etc/cron.d
 pgem_cron_etc()
 {
-  if [ -z $1 ]
+  if [ -z "$1" ]
   then
     local path=/etc/cron.d/profileGem
   else
     local path=$1
   fi
-  pgem_cron_out -u - > $path && echo "Successfully installed system crontab to $path"
+  pgem_cron_out -u - > "$path" && echo "Successfully installed system crontab to $path"
 }
 
