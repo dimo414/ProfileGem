@@ -8,8 +8,10 @@
 # Used by pgem_decorate.
 _copy_function()
 {
-  declare -F ${1:?Missing function} >& /dev/null || { echo No such function $1; return 1; }
-  eval "$(echo "${2:?Missing function name}()"; declare -f ${1} | tail -n +2)"
+  local function="${1:?Missing function}"
+  local new_name="${2:?Missing new function name}"
+  declare -F "$function" >& /dev/null || { echo No such function $1; return 1; }
+  eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
 }
 
 # Given a relative path, prints an absolute path
