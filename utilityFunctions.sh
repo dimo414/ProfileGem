@@ -21,10 +21,22 @@ pgem_decorate()
 if declare -F ${prefix}${func} >& /dev/null
   then
     # This function has previously been decorated; restore the original version
-    _copy_function "${prefix}${func}" "${func}"
+    copy_function "${prefix}${func}" "${func}"
   fi
-  _copy_function "${func}" "${prefix}${func}"
+  copy_function "${func}" "${prefix}${func}"
 }
+
+# Given a name and an existing function, create a new function called name that
+# executes the same commands as the initial function.
+# Used by pgem_decorate.
+copy_function()
+{
+  local function="${1:?Missing function}"
+  local new_name="${2:?Missing new function name}"
+  declare -F "$function" >& /dev/null || { echo "No such function $1"; return 1; }
+  eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
+}
+
 
 # Prompt the user to confirm (y/n), defaulting to no.
 # Returns a non-zero exit code on no.

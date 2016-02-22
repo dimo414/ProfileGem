@@ -3,17 +3,6 @@
 # Used internally to prepare the profile, not meant to be called by the user
 #
 
-# Given a name and an existing function, create a new function called name that
-# executes the same commands as the initial function.
-# Used by pgem_decorate.
-_copy_function()
-{
-  local function="${1:?Missing function}"
-  local new_name="${2:?Missing new function name}"
-  declare -F "$function" >& /dev/null || { echo "No such function $1"; return 1; }
-  eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
-}
-
 # Given a relative path, prints an absolute path
 _realpath()
 {
