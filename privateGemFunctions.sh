@@ -44,7 +44,7 @@ _findConfigFile()
   do
     [ -f "$file" ] && echo "$file" && return 0
   done
-  echo "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}" >&2
+  err "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}"
   return 1
 }
   
@@ -67,11 +67,16 @@ _eachGem()
     then
       pushd "$gem" > /dev/null
       "$@"
-      local exit=$? && [[ $exit != 0 ]] && _PGEM_LOAD_EXIT_CODE=$exit
+      local exit=$?
+      if [[ $exit != 0 ]]
+      then
+        _PGEM_LOAD_EXIT_CODE=$exit
+        err "'$*' failed in $gem"
+      fi
       popd > /dev/null
     elif $_PGEM_DEBUG
     then
-      echo "$gem is not a directory."
+      err "$gem is not a directory."
       _GEM_LIST=${_GEM_LIST//$gem/}
     fi
   done
@@ -105,7 +110,7 @@ _updateRepo()
   then
     git pull --rebase > /dev/null
   else
-    echo "Could not update $dir" >&2
+    err "Could not update $dir"
     return 1
   fi
 }
@@ -115,7 +120,7 @@ _srcIfExist()
 {
   if [ -f "$@" ]
   then
-    $_PGEM_DEBUG && echo "Including $(_dispPath "$@")"
+    log "Including $(_dispPath "$@")"
     # shellcheck disable=SC1090
     . "$@"
   fi
@@ -156,7 +161,7 @@ _loadScripts()
 {
   if [ -d scripts ]
   then
-    $_PGEM_DEBUG && echo "Adding $(pwd)/scripts to \$PATH"
+    log "Adding $(pwd)/scripts to \$PATH"
     # shellcheck disable=SC2155
     export PATH="$(pwd)/scripts:$PATH"
   fi

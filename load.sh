@@ -22,6 +22,9 @@ _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 [ -z "$_PGEM_LOAD_EXIT_CODE" ] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
 
+err() { echo "$@" >&2; }
+log() { $_PGEM_DEBUG && err "$@"; }
+
 pushd "$_PGEM_LOC" > /dev/null
 
 source ./privateGemFunctions.sh
@@ -54,11 +57,11 @@ then
   # shellcheck disable=SC2164
   if [ -d "$START_DIR" ]
   then
-    $_PGEM_DEBUG && echo -e "Switching from $(pwd) to $START_DIR\n"
+    log "Switching from $(pwd) to $START_DIR\n"; log
     cd . # sets $OLDPWD to the starting directory, usually ~
     cd $START_DIR
   else
-    echo "Start dir $START_DIR does not exist!"
+    err "Start dir $START_DIR does not exist!"
   fi
 fi
 
