@@ -31,7 +31,7 @@ _findConfigFile()
   local file
   for file in "${_CONFIG_FILE_LOCS[@]}"
   do
-    [ -f "$file" ] && echo "$file" && return 0
+    [[ -f "$file" ]] && echo "$file" && return 0
   done
   err "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}"
   return 1
@@ -52,7 +52,7 @@ _eachGem()
   local gem
   for gem in $_GEM_LIST
   do
-    if [ -d "$gem" ]
+    if [[ -d "$gem" ]]
     then
       pushd "$gem" > /dev/null
       "$@"
@@ -79,23 +79,23 @@ _updateRepo()
 {
   local dir
   dir=$(basename "$(pwd)")
-  if [ -f noupdate ]
+  if [[ -f "noupdate" ]]
   then
     echo "Not updating $dir"
     return
   fi
   echo "Updating $dir"
-  if [ -f update.sh ]
+  if [[ -f "update.sh" ]]
   then
     ./update.sh
-  elif [ -d .hg ]
+  elif [[ -d ".hg" ]]
   then
     # separate steps, so that we update even if pull doesn't
     # find anything (i.e. someone pushed to this repo)
     # FIXME this doesn't correctly prompt/exit if conflicts
     hg pull > /dev/null
     hg up > /dev/null
-  elif [ -d .git ]
+  elif [[ -d ".git" ]]
   then
     git pull --rebase > /dev/null
   else
@@ -107,18 +107,18 @@ _updateRepo()
 # Sources a file if it exists, skips if not
 _srcIfExist()
 {
-  if [ -f "$@" ]
+  if [[ -f "$1" ]]
   then
-    log "Including $(_dispPath "$@")"
+    log "Including $(_dispPath "$1")"
     # shellcheck disable=SC1090
-    . "$@"
+    . "$1"
   fi
 }
 
 # Initialize environment
 _loadBase()
 {
-  _srcIfExist base.conf.sh
+  _srcIfExist "base.conf.sh"
 }
 
 # Evaluates the config file - not called by _eachGem
@@ -130,25 +130,25 @@ _evalConfig()
 # Set environment variables
 _loadEnv()
 {
-  _srcIfExist environment.sh
+  _srcIfExist "environment.sh"
 }
 
 # Load aliases
 _loadAlias()
 {
-  _srcIfExist aliases.sh
+  _srcIfExist "aliases.sh"
 }
 
 # Define functions
 _loadFuncs()
 {
-  _srcIfExist functions.sh
+  _srcIfExist "functions.sh"
 }
 
 # Add scripts directory to PATH
 _loadScripts()
 {
-  if [ -d scripts ]
+  if [[ -d "scripts" ]]
   then
     log "Adding $(pwd)/scripts to \$PATH"
     # shellcheck disable=SC2155
@@ -159,13 +159,13 @@ _loadScripts()
 # Run commands
 _loadCmds()
 {
-  _srcIfExist commands.sh
+  _srcIfExist "commands.sh"
 }
 
 # Output doc file
 _printDoc()
 {
-  if [ -f "$1" ]
+  if [[ -f "$1" ]]
   then
     $_PGEM_DEBUG && basename "$(pwd)"
     cat "$1"

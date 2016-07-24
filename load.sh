@@ -17,11 +17,12 @@ _PRE_PGEM_PATH="$PATH"
 _PRE_PGEM_PS1="$PS1"
 _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 
-[ -z "$PGEM_INFO_ON_START" ] && PGEM_INFO_ON_START=false
-[ -z "$_PGEM_DEBUG" ] && _PGEM_DEBUG=false
-[ -z "$_PGEM_LOAD_EXIT_CODE" ] && _PGEM_LOAD_EXIT_CODE=0
+[[ -z "$PGEM_INFO_ON_START" ]] && PGEM_INFO_ON_START=false
+[[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false
+[[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
 
+# TODO these should probably be moved to privateGemFunctions.sh and renamed
 err() { echo "$@" >&2; }
 log() { $_PGEM_DEBUG && err "$@"; }
 
@@ -40,7 +41,7 @@ _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
 _eachGem _loadScripts   # add scripts to path
 
-if [ ! -z "$PS1" ]      # interactive shell
+if [[ ! -z "$PS1" ]]      # interactive shell
 then
   if $PGEM_INFO_ON_START
   then
@@ -52,12 +53,12 @@ $_PGEM_DEBUG && echo
 
 popd > /dev/null
 
-if [ -n "$START_DIR" ]
+if [[ -n "$START_DIR" ]]
 then
   # shellcheck disable=SC2164
-  if [ -d "$START_DIR" ]
+  if [[ -d "$START_DIR" ]]
   then
-    log "Switching from $(pwd) to $START_DIR\n"; log
+    log -e "Switching from $(pwd) to $START_DIR\n"
     cd . # sets $OLDPWD to the starting directory, usually ~
     cd $START_DIR
   else
@@ -68,7 +69,7 @@ fi
 # Enable running a command in ProfileGem's scope
 # Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
-if [ $# -gt 0 ]
+if [[ $# -gt 0 ]]
 then
   eval "$@"
 else

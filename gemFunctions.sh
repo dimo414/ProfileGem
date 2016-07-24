@@ -46,7 +46,7 @@ pgem_update()
 # TODO improve this
 pgem_info()
 {
-  echo Useful Commands:
+  echo "Useful Commands:"
   _eachGem _printDoc info.txt
   #echo 'Run `pgem_help` for more'
 }
@@ -70,9 +70,9 @@ pgem_cron_out()
   cronFile()
   {
     local file="jobs.txt"
-    if [ -f $file ]
+    if [[ -f "$file" ]]
     then
-      echo "-f $(_realpath $file)"
+      echo "-f $(_realpath "$file")"
     fi
   }
   local files
@@ -97,11 +97,11 @@ pgem_cron_user()
 # Writes the ProfileGem crontab to /etc/cron.d
 pgem_cron_etc()
 {
-  if [ -z "$1" ]
+  if [[ -z "$1" ]]
   then
-    local path=/etc/cron.d/profileGem
+    local path="/etc/cron.d/profileGem"
   else
-    local path=$1
+    local path="$1"
   fi
   pgem_cron_out -u - > "$path" && echo "Successfully installed system crontab to $path"
 }
