@@ -3,6 +3,11 @@
 # A collection of helper functions that are intended to be used by Gems
 #
 
+# Print a message to stderr
+pgem_err() { echo "$@" >&2; }
+# Print a message to stderr if debug logging enabled
+pgem_log() { $_PGEM_DEBUG && err "$@"; }
+
 # Copies a function f to _orig_f, letting callers redefine (or decorate) f
 # http://stackoverflow.com/q/1203583
 #

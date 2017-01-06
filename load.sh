@@ -22,7 +22,8 @@ _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 [[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
 
-# TODO these should probably be moved to privateGemFunctions.sh and renamed
+# TODO verify no gems are using these, then schedule for deletion
+# Usages should be migrated to pgem_err and pgem_log in utilityFunctions.sh
 err() { echo "$@" >&2; }
 log() { $_PGEM_DEBUG && err "$@"; }
 
