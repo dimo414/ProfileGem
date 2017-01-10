@@ -11,7 +11,11 @@ _realpath()
     realpath "$@"
   else
     # readlink -f doesn't exist on OSX, so can't use readlink
-    (cd "$@" && pwd)
+    if [[ -d "$@" ]]; then
+      (cd "$@" && pwd)
+    else
+      echo "$(cd "$(dirname "$@")" && pwd)/$(basename "$@")"
+    fi
   fi
 }
   
