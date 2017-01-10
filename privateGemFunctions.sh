@@ -33,6 +33,7 @@ _findConfigFile()
   do
     [[ -f "$file" ]] && echo "$file" && return 0
   done
+  echo "${_CONFIG_FILE_LOCS[0]}" # Fallback, for error handling
   err "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}"
   return 1
 }
