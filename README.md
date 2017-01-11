@@ -1,5 +1,7 @@
 # ProfileGem
 
+[![Build Status](https://drone.io/bitbucket.org/dimo414/profilegem/status.png)](https://drone.io/bitbucket.org/dimo414/profilegem/latest)
+
 *A shell configuration utility to compartmentalize and manage your terminal utilities and
 environment*
 
