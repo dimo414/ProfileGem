@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# Commands to execute in interactive terminals
+# Commands to execute before ProfileGem finishes loading.
 #
-# Executed last
-# Not included in non-interactive terminals, like cron
-# 
+# Executed last, and only included in interactive terminals.
+#
+
+

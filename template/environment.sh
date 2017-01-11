@@ -1,5 +1,10 @@
 #!/bin/bash
 #
-# Update, specify, and compute environment variables, such as
-# PATH, or PS1 here.
-# 
+# Bash environment
+#
+# Configure environment variables here. Often these should be set based on
+# variables defined in base.conf.sh so that users and other gems can configure
+# the behavior of this file.
+#
+
+

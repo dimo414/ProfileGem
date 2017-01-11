@@ -1,6 +1,8 @@
 #!/bin/bash
-# 
-# Define bash functions here
-# 
+#
+# Bash functions
+#
 # Loaded after environment.sh and aliases.sh
-# 
+#
+
+
