@@ -11,7 +11,11 @@ _realpath()
     realpath "$@"
   else
     # readlink -f doesn't exist on OSX, so can't use readlink
-    (cd "$@" && pwd)
+    if [[ -d "$@" ]]; then
+      (cd "$@" && pwd)
+    else
+      echo "$(cd "$(dirname "$@")" && pwd)/$(basename "$@")"
+    fi
   fi
 }
   
@@ -33,6 +37,7 @@ _findConfigFile()
   do
     [[ -f "$file" ]] && echo "$file" && return 0
   done
+  echo "${_CONFIG_FILE_LOCS[0]}" # Fallback, for error handling
   pgem_err "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}"
   return 1
 }
