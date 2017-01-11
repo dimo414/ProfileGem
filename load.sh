@@ -3,16 +3,17 @@
 #
 # ProfileGem
 #
-# ProfileGem enables highly granular control of your terminal 
+# ProfileGem enables compartmentalized control of your terminal
 # with minimal configuration by loading environment settings,
 # aliases, functions, and scripts from a series of "gems"
-# you can customize and use independantly.  Easily configure
-# similar, yet application specific, profiles with everything
-# you need immidiately on hand.
+# you can customize and use independently. By loading different
+# gems depending on your environment you can create a custom but
+# familiar shell everywhere you go.
 #
 
 START_DIR=
 
+_PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 _PRE_PGEM_PS1="$PS1"
 _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
@@ -22,11 +23,6 @@ _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 [[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
 
-# TODO verify no gems are using these, then schedule for deletion
-# Usages should be migrated to pgem_err and pgem_log in utilityFunctions.sh
-err() { echo "$@" >&2; }
-log() { $_PGEM_DEBUG && err "$@"; }
-
 pushd "$_PGEM_LOC" > /dev/null
 
 source ./privateGemFunctions.sh
@@ -35,8 +31,12 @@ source ./utilityFunctions.sh
 
 _GEM_LIST=$(_gemList)   # populates the list of gems
 
+
+# TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
 _eachGem _loadBase      # initialize environment, executed before config file is parsed
 _evalConfig             # executes the commands in the config file
+# TODO perhaps there should be a separate step between base.conf.sh and environment.sh
+# so that all gems, not just earlier gems, can configure each other
 _eachGem _loadEnv       # set environment variables
 _eachGem _loadAlias     # create aliases
 _eachGem _loadFuncs     # define functions
@@ -50,27 +50,29 @@ then
   fi
   _eachGem _loadCmds    # run interactive commands
 fi
-$_PGEM_DEBUG && echo
+pgem_log # for newline
 
 popd > /dev/null
 
 if [[ -n "$START_DIR" ]]
 then
-  # shellcheck disable=SC2164
   if [[ -d "$START_DIR" ]]
   then
-    log -e "Switching from $(pwd) to $START_DIR\n"
-    cd . # sets $OLDPWD to the starting directory, usually ~
-    cd $START_DIR
+    pgem_log "Switching from $(pwd) to $START_DIR"
+    pgem_log
+    _
+    # cd . sets $OLDPWD to the starting directory, usually $HOME
+    cd . || pgem_err "Could not cd to $_PRE_PGEM_PWD ...?"
+    cd "$START_DIR" || pgem_err "Could not cd to START_DIR $START_DIR"
   else
-    err "Start dir $START_DIR does not exist!"
+    pgem_err "Start dir $START_DIR does not exist!"
   fi
 fi
 
 # Enable running a command in ProfileGem's scope
 # Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
-if [[ $# -gt 0 ]]
+if (($#))
 then
   eval "$@"
 else
