@@ -60,7 +60,6 @@ then
   then
     pgem_log "Switching from $(pwd) to $START_DIR"
     pgem_log
-    _
     # cd . sets $OLDPWD to the starting directory, usually $HOME
     cd . || pgem_err "Could not cd to $_PRE_PGEM_PWD ...?"
     cd "$START_DIR" || pgem_err "Could not cd to START_DIR $START_DIR"
