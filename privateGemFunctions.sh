@@ -113,9 +113,7 @@ _loadFuncs() { _srcIfExist "functions.sh"; }
 # Add scripts directory to PATH
 _loadScripts() {
   if [[ -d "scripts" ]]; then
-    pgem_log "Adding $(pwd)/scripts to \$PATH"
-    # shellcheck disable=SC2155
-    export PATH="$(pwd)/scripts:$PATH"
+    pgem_add_path "scripts"
   fi
 }
 

@@ -9,9 +9,9 @@
 # relaunch the shell.
 pgem_reload() {
   $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
-  PATH="$_PRE_PGEM_PATH"
-  PS1="$_PRE_PGEM_PS1"
-  PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
+  export PATH="$_PRE_PGEM_PATH"
+  export PS1="$_PRE_PGEM_PS1"
+  export PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
 
   pushd "$_PRE_PGEM_PWD" > /dev/null
   . "${_PGEM_LOC}/load.sh"

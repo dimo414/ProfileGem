@@ -13,6 +13,27 @@ pgem_err() { echo "$@" >&2; }
 # Print a message to stderr if debug logging enabled
 pgem_log() { $_PGEM_DEBUG && pgem_err "$@"; }
 
+# Adds a directory to the front of PATH, allowing ProfileGem to manage PATH
+# rather than each gem doing so individually.
+pgem_add_path() {
+  if [[ -d "${1:?Must specify a path to add}" ]]; then
+    if echo $PATH | grep -q '^\(.*:\)*'"$1"'\(:.*\)*$'; then
+      pgem_log "$1 is already on the PATH, not adding..."
+      return 2
+    fi
+    local absPath=$1
+    # don't resolve symlinks unless the user provides a relative path
+    if [[ "${absPath:0:1}" != "/" ]]; then
+      absPath=$(_realpath "$1")
+  fi
+    pgem_log "Adding $absPath to the PATH"
+    export PATH="$absPath:$PATH"
+  else
+    pgem_err "$1 is not a directory, cannot add to PATH."
+    return 1
+  fi
+}
+
 # Copies a function f to _orig_f, letting callers redefine (or decorate) f
 # http://stackoverflow.com/q/1203583
 #
