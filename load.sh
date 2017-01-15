@@ -29,26 +29,28 @@ source ./privateGemFunctions.sh
 source ./gemFunctions.sh
 source ./utilityFunctions.sh
 
-_GEM_LIST=$(_gemList)   # populates the list of gems
-
+# Populate the list of enabled gems
+_GEMS=()
+for gem in $(grep '^#GEM' "$_PGEM_LOC/$(_configFile)" | awk '{ print $2 ".gem" }'); do
+  _GEMS+=($gem)
+done
+pgem_log "About to load gems: ${_GEMS[@]}"
 
 # TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
-_eachGem _loadBase      # initialize environment, executed before config file is parsed
-_evalConfig             # executes the commands in the config file
+_eachGem _loadBase          # initialize environment, executed before config file is parsed
+_evalConfig                 # executes the commands in the config file
 # TODO perhaps there should be a separate step between base.conf.sh and environment.sh
 # so that all gems, not just earlier gems, can configure each other
-_eachGem _loadEnv       # set environment variables
-_eachGem _loadAlias     # create aliases
-_eachGem _loadFuncs     # define functions
-_eachGem _loadScripts   # add scripts to path
+_eachGem _loadEnv           # set environment variables
+_eachGem _loadAlias         # create aliases
+_eachGem _loadFuncs         # define functions
+_eachGem _loadScripts       # add scripts to path
 
-if [[ ! -z "$PS1" ]]      # interactive shell
-then
-  if $PGEM_INFO_ON_START
-  then
+if [[ ! -z "$PS1" ]]; then  # interactive shell
+  if $PGEM_INFO_ON_START; then
     pgem_info
   fi
-  _eachGem _loadCmds    # run interactive commands
+  _eachGem _loadCmds        # run interactive commands
 fi
 pgem_log # for newline
 
@@ -71,8 +73,7 @@ fi
 # Enable running a command in ProfileGem's scope
 # Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
-if (($#))
-then
+if (($#)); then
   eval "$@"
 else
   return $_PGEM_LOAD_EXIT_CODE 2>/dev/null || exit $_PGEM_LOAD_EXIT_CODE

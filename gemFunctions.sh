@@ -13,8 +13,8 @@ pgem_reload() {
   PS1="$_PRE_PGEM_PS1"
   PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
 
-  pushd "$_PGEM_LOC" > /dev/null
-  . ./load.sh
+  pushd "$_PRE_PGEM_PWD" > /dev/null
+  . "${_PGEM_LOC}/load.sh"
   local ret=$?
   popd > /dev/null
 

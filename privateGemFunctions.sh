@@ -4,8 +4,7 @@
 #
 
 # Given a relative path, prints an absolute path
-_realpath()
-{
+_realpath() {
   if command -v realpath >& /dev/null
   then
     realpath "$@"
@@ -18,60 +17,42 @@ _realpath()
     fi
   fi
 }
-  
 
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
-_dispPath()
-{
+_dispPath() {
   _realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
 }
 
-# Identifies the config file to read
-# Only one file is loaded, the first file that exists out of the below locations
-_CONFIG_FILE_LOCS=(local.conf.sh "config.d/users/${USER}.sh" "config.d/hosts/${HOSTNAME}.sh")
-_findConfigFile()
-{
-  local file
-  for file in "${_CONFIG_FILE_LOCS[@]}"
-  do
-    [[ -f "$file" ]] && echo "$file" && return 0
-  done
-  echo "${_CONFIG_FILE_LOCS[0]}" # Fallback, for error handling
-  pgem_err "Failed to find config file, looked in ${_CONFIG_FILE_LOCS[*]}"
-  return 1
-}
-  
-
-# Output the list of gems to load, in order
-# TODO this should populate a global array rather than echo a space-delimited string
-_gemList()
-{
-  grep '^#GEM' "$_PGEM_LOC/$(_findConfigFile)" | awk '{ print $2 ".gem" }'
+# Checks that the config file exists, and returns its name
+_configFile() {
+  local conf_file='local.conf.sh'
+  echo "$conf_file"
+  if ! [[ -f "$conf_file" ]]; then
+    pgem_err "No ${conf_file} file found."
+    return 1
+  fi
 }
 
-# Run "$@" in each gem
-_eachGem()
-{
+# Run "$@" in each gem - should generally be a function
+_eachGem() {
   pushd "$_PGEM_LOC" > /dev/null
-  local gem
-  for gem in $_GEM_LIST
-  do
-    if [[ -d "$gem" ]]
-    then
+  local i
+  for i in "${!_GEMS[@]}"; do
+    local gem="${_GEMS[$i]}"
+    if [[ -d "$gem" ]]; then
       pushd "$gem" > /dev/null
       "$@"
       local exit=$?
-      if [[ $exit != 0 ]]
-      then
+      if [[ $exit != 0 ]]; then
         _PGEM_LOAD_EXIT_CODE=$exit
         pgem_err "'$*' failed in $gem"
       fi
       popd > /dev/null
-    elif $_PGEM_DEBUG
-    then
-      pgem_err "$gem is not a directory."
-      _GEM_LIST=${_GEM_LIST//$gem/}
+    else
+      pgem_log "$gem is not a directory."
+      # http://wiki.bash-hackers.org/syntax/arrays
+      unset -v '_GEMS['"$i"']'
     fi
   done
   popd > /dev/null
@@ -80,28 +61,24 @@ _eachGem()
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
 # Alternatively create an update.sh script in the current directory to specify
 # custom update behavior
-_updateRepo()
-{
+_updateRepo() {
   local dir
   dir=$(basename "$(pwd)")
-  if [[ -f "noupdate" ]]
-  then
+  if [[ -f "noupdate" ]]; then
     echo "Not updating $dir"
     return
   fi
   echo "Updating $dir"
-  if [[ -f "update.sh" ]]
-  then
+  if [[ -f "update.sh" ]]; then
     ./update.sh
-  elif [[ -d ".hg" ]]
-  then
+  elif [[ -d ".hg" ]]; then
     # separate steps, so that we update even if pull doesn't
     # find anything (i.e. someone pushed to this repo)
-    # FIXME this doesn't correctly prompt/exit if conflicts
+    # TODO this should alert more clearly if the user needs to merge heads
     hg pull > /dev/null
-    hg up > /dev/null
-  elif [[ -d ".git" ]]
-  then
+    hg up -c > /dev/null
+  elif [[ -d ".git" ]]; then
+    # TODO are their failure modes for this?
     git pull --rebase > /dev/null
   else
     pgem_err "Could not update $dir"
@@ -110,10 +87,8 @@ _updateRepo()
 }
 
 # Sources a file if it exists, skips if not
-_srcIfExist()
-{
-  if [[ -f "$1" ]]
-  then
+_srcIfExist() {
+  if [[ -f "$1" ]];  then
     pgem_log "Including $(_dispPath "$1")"
     # shellcheck disable=SC1090
     . "$1"
@@ -121,40 +96,23 @@ _srcIfExist()
 }
 
 # Initialize environment
-_loadBase()
-{
-  _srcIfExist "base.conf.sh"
-}
+_loadBase() {  _srcIfExist "base.conf.sh"; }
 
 # Evaluates the config file - not called by _eachGem
-_evalConfig()
-{
-  _srcIfExist "$(_findConfigFile)"
-}
+_evalConfig() {  _srcIfExist "$(_configFile)"; }
 
 # Set environment variables
-_loadEnv()
-{
-  _srcIfExist "environment.sh"
-}
+_loadEnv() {  _srcIfExist "environment.sh"; }
 
 # Load aliases
-_loadAlias()
-{
-  _srcIfExist "aliases.sh"
-}
+_loadAlias() { _srcIfExist "aliases.sh"; }
 
 # Define functions
-_loadFuncs()
-{
-  _srcIfExist "functions.sh"
-}
+_loadFuncs() { _srcIfExist "functions.sh"; }
 
 # Add scripts directory to PATH
-_loadScripts()
-{
-  if [[ -d "scripts" ]]
-  then
+_loadScripts() {
+  if [[ -d "scripts" ]]; then
     pgem_log "Adding $(pwd)/scripts to \$PATH"
     # shellcheck disable=SC2155
     export PATH="$(pwd)/scripts:$PATH"
@@ -162,16 +120,11 @@ _loadScripts()
 }
 
 # Run commands
-_loadCmds()
-{
-  _srcIfExist "commands.sh"
-}
+_loadCmds() { _srcIfExist "commands.sh"; }
 
 # Output doc file
-_printDoc()
-{
-  if [[ -f "$1" ]]
-  then
+_printDoc() {
+  if [[ -f "$1" ]]; then
     $_PGEM_DEBUG && basename "$(pwd)"
     cat "$1"
   fi

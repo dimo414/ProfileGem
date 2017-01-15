@@ -5,8 +5,8 @@
 
 # TODO verify no gems are using these, then schedule for deletion
 # Usages should be migrated to pgem_err and pgem_log
-err() { pgem_err "should be using pgem_err"; pgem_err "$@"; }
-log() { pgem_err "should be using pgem_log"; pgem_err "$@"; }
+err() { pgem_err "WARN - this gem should be using pgem_err"; pgem_err "$@"; }
+log() { pgem_err "WARN - this gem should be using pgem_log"; pgem_err "$@"; }
 
 # Print a message to stderr
 pgem_err() { echo "$@" >&2; }
@@ -55,8 +55,7 @@ pgem_confirm() {
 
 # Prompt the user to confirm (y/n), defaulting to yes.
 # Returns a non-zero exit code on no.
-pgem_confirm_no()
-{
+pgem_confirm_no() {
   local response
   read -r -p "${*:-"Would you like to continue?"} [Y/n] " response
   ! [[ "$response" =~ ^([nN][oO]|[nN])$ ]]
