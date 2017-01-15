@@ -53,6 +53,3 @@ pgem_info() {
 #  echo
 #  _eachGem _printDoc help.txt
 #}
-
-# TODO remove once a replacement for jobs has been implemented
-. cron.sh

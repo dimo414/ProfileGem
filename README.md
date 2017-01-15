@@ -19,13 +19,11 @@ loaded by ProfileGem to customize your environment just the way you want it.
 
 ## Example Uses
 
-* You have a series of personal aliases, functions, and configurations you like to use on all your
+* You have a series of personal aliases, functions, and configurations you like to use across multiple
   machines.
 * Your team has a set of utilities everyone regularly uses and wants to keep in sync.
 * You need to configure your shell differently depending on the current project you're working on,
   but want to easily switch between configurations when you change projects.
-* You have a common set of cronjobs which rely on your shell configuration, or which you want to
-  easily enable or disable on different machines.
 * You want to load up your personal, team, and project configurations together, giving you exactly
   the shell you need *right now*.
 
@@ -85,26 +83,6 @@ like this:
 The `myshell.gem` will configure the `$PS1` but use the overriden `$HOST_COLOR`. Now each machine
 you use can have a custom prompt with no fuss.
 
-### Crontabs
-
-*This feature is in beta, and will likely be substantially revamped in a future release.*
-
-ProfileGem includes an extensible cron deployment utility, allowing you to define useful jobs
-per-gem, then configure which jobs should be run per machine, and generate crontabs dynamically.
-
-* `pgem_cron_info`: Outputs information about ProfileGem's cronjobs, particularly the `PATH` value
-  it will use, and the list of available jobs you can enable.
-* `PGEM_JOBS=...`: Set this in your `local.conf.sh` to a space-separated list of jobs ProfileGem is
-  aware of to include these jobs in ProfileGem's generated crontab.
-* `pgem_cron_out`: Prints the crontab to stdout for review.
-* `pgem_cron_user`: Writes the ProfileGem cron jobs to the user's crontab, essentially
-  `pgem_cron_out | crontab`.
-* `pgem_cron_etc`: Writes the ProfileGem cron jobs to `/etc/cron.d/`, preserving the users crontab.
-
-By default all jobs are disabled, however any jobs specified in `$PGEM_JOBS` will be enabled for
-the current machine. This allows gems to define complex or potentially conflicting jobs, and let
-individual installations easily enable the jobs they need.
-
 ## Public Gems
 
 Some gems you can install right away:
@@ -122,7 +100,7 @@ directory, and the comments in the individual template files.
 
 ## Copyright and License
 
-Copyright 2016-2012 Michael Diamond
+Copyright 2012-2016 Michael Diamond
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
