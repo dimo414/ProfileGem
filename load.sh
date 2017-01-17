@@ -11,12 +11,14 @@
 # familiar shell everywhere you go.
 #
 
-START_DIR=
 
 _PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 _PRE_PGEM_PS1="$PS1"
 _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
+
+START_DIR=
+PGEM_VERSION=(0 9 0)
 
 [[ -z "$PGEM_INFO_ON_START" ]] && PGEM_INFO_ON_START=false
 [[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false

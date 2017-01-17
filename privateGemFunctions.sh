@@ -7,13 +7,13 @@
 _realpath() {
   if command -v realpath >& /dev/null
   then
-    realpath "$@"
+    realpath "$1"
   else
     # readlink -f doesn't exist on OSX, so can't use readlink
-    if [[ -d "$@" ]]; then
-      (cd "$@" && pwd)
+    if [[ -d "$1" ]]; then
+      (cd "$1" && pwd -P)
     else
-      echo "$(cd "$(dirname "$@")" && pwd)/$(basename "$@")"
+      echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
     fi
   fi
 }
@@ -58,12 +58,27 @@ _eachGem() {
   popd > /dev/null
 }
 
+# Prints a line describing the status of a local repo vs. its remote source.
+# No output means no (known) changes to pull.
+# Currently only supports hg
+_incomingRepo() {
+  local dir
+  dir=$(basename "$PWD")
+  if [[ -d ".hg" ]]; then
+    local incoming
+    incoming=$(hg incoming -q | wc -l)
+    if (( incoming > 0 )); then
+      echo "$dir is $incoming change(s) behind."
+    fi
+  fi
+}
+
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
 # Alternatively create an update.sh script in the current directory to specify
 # custom update behavior
 _updateRepo() {
   local dir
-  dir=$(basename "$(pwd)")
+  dir=$(basename "$PWD")
   if [[ -f "noupdate" ]]; then
     echo "Not updating $dir"
     return
@@ -120,10 +135,20 @@ _loadScripts() {
 # Run commands
 _loadCmds() { _srcIfExist "commands.sh"; }
 
-# Output doc file
+# Output first paragraph of info.txt, indented
+_printDocLead() {
+  echo "$(basename $PWD)"
+  if [[ -f "info.txt" ]]; then
+    # http://stackoverflow.com/a/1603425/113632
+    sed -e 's/^/  /' -e '/^\s*$/Q' "info.txt"
+    echo
+  fi
+}
+
+# Output info.txt and check for incoming changes
 _printDoc() {
-  if [[ -f "$1" ]]; then
-    $_PGEM_DEBUG && basename "$(pwd)"
-    cat "$1"
+  _incomingRepo
+  if [[ -f "info.txt" ]]; then
+    cat "info.txt"
   fi
 }

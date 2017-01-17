@@ -39,12 +39,26 @@ pgem_update() {
   pgem_reload
 }
 
-# Prints a usage summary of all installed gems.
-# TODO improve this
+# Prints a high-level summary of all installed gems.
 pgem_info() {
-  echo "Useful Commands:"
-  _eachGem _printDoc info.txt
-  #echo 'Run `pgem_help` for more'
+  if (($#)); then
+    local gem="${1%.gem}.gem" # supports "foo" or "foo.gem"
+    if [[ -d "$_PGEM_LOC/$gem" ]]; then
+      pushd "$_PGEM_LOC/$gem" > /dev/null
+      _incomingRepo
+      _printDoc
+      popd > /dev/null
+    else
+      pgem_err "No such gem $gem"
+      return 1
+    fi
+  else
+    pushd "$_PGEM_LOC" > /dev/null
+    echo "ProfileGem v${PGEM_VERSION[0]}.${PGEM_VERSION[1]}.${PGEM_VERSION[2]}"
+    _incomingRepo
+    _eachGem _printDocLead
+    popd > /dev/null
+  fi
 }
 
 # TODO
