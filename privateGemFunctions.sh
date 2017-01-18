@@ -53,6 +53,7 @@ _eachGem() {
       pgem_log "$gem is not a directory."
       # http://wiki.bash-hackers.org/syntax/arrays
       unset -v '_GEMS['"$i"']'
+      _PGEM_LOAD_EXIT_CODE=10
     fi
   done
   popd > /dev/null
