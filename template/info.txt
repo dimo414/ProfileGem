@@ -1,0 +1,24 @@
+This file is displayed via pgem_info if it exists.
+
+Only the first paragraph is printed by pgem_info by default, subsequent
+paragraphs are printed by running `pgem_info GEM_NAME` to get details.
+
+  Note: lines are not re-flowed or reformatted.
+
+The following "sections" are a suggested way of structuring this file; they are
+all optional.
+
+# Features
+
+Detail the key features and functionality of this gem, such as any noteworthy
+functions or aliases.
+
+# Configuration
+
+Specify any noteworthy ways this gem's behavior can be configured, either in
+the user's local.conf.sh or by other gems.
+
+# Interactions
+
+Describe any other gems this one can interact with. Also detail any hooks this
+gem provides for other gems to interact with this one.
