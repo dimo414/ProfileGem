@@ -85,7 +85,8 @@ you use can have a custom prompt with no fuss.
 
 Some gems you can install right away:
 
-* [prompt.gem](https://bitbucket.org/dimo414/prompt.gem): a simple but extensible prompt.
+* [prompt.gem](https://bitbucket.org/dimo414/prompt.gem): installs a clean and extensible prompt.
+* [util.gem](https://bitbucket.org/dimo414/util.gem): several helpful and non-invasive utilities.
 
 ## Creating A Gem
 
@@ -98,7 +99,7 @@ directory, and the comments in the individual template files.
 
 ## Copyright and License
 
-Copyright 2012-2016 Michael Diamond
+Copyright 2012-2017 Michael Diamond
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
