@@ -64,7 +64,10 @@ there are some features worth knowing about:
   running `pgem_reload`.
 * `pgem_update`: Updates ProfileGem and all checked out gems from their parent repositories and
   then reloads them.
-* `pgem_info`: Print basic usage information about each gem (*this is still a work-in-progress*).
+* `pgem_info`: List installed gems. Run `pgem_info GEM_NAME` to display more detailed information
+  about that gem, if available.
+* `pgem_help`: Outputs ProfileGem's usage information.
+
 
 ### Customizing With `local.conf.sh`
 
