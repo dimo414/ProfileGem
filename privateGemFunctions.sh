@@ -86,7 +86,7 @@ _updateRepo() {
   fi
   echo "Updating $dir"
   if [[ -f "update.sh" ]]; then
-    ./update.sh
+    _PGEM_DEBUG=$_PGEM_DEBUG ./update.sh
   elif [[ -d ".hg" ]]; then
     # separate steps, so that we update even if pull doesn't
     # find anything (i.e. someone pushed to this repo)
