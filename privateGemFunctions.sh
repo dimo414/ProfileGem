@@ -140,8 +140,9 @@ _loadCmds() { _srcIfExist "commands.sh"; }
 _printDocLead() {
   echo "$(basename $PWD)"
   if [[ -f "info.txt" ]]; then
-    # http://stackoverflow.com/a/1603425/113632
-    sed -e 's/^/  /' -e '/^\s*$/Q' "info.txt"
+    # http://stackoverflow.com/a/1603584/113632
+    # BSD sed (OSX) lacks the q and Q flags mentioned in some other answers
+    awk -v 'RS=\n\n' '1;{exit}' info.txt | sed 's/^/  /'
     echo
   fi
 }
