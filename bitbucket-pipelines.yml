@@ -11,6 +11,15 @@ pipelines:
         script:
           - touch local.conf.sh
           - ./load.sh
+          - ./load.sh pgem_help
+          - ./load.sh pgem_info
+          - ./load.sh pgem_reload
+          - ./load.sh pgem_update
           - cp -R template empty.gem
+          - touch empty.gem/noupdate # doesn't test any of the update behavior
           - echo '#GEM empty' > local.conf.sh
           - ./load.sh
+          - ./load.sh pgem_info
+          - ./load.sh pgem_info empty
+          - ./load.sh pgem_reload
+          - ./load.sh pgem_update
