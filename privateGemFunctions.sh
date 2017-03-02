@@ -149,7 +149,6 @@ _printDocLead() {
 
 # Output info.txt and check for incoming changes
 _printDoc() {
-  _incomingRepo
   if [[ -f "info.txt" ]]; then
     cat "info.txt"
   fi
