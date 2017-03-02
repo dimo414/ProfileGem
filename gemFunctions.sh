@@ -8,14 +8,16 @@
 # possible reloading will not be sufficient and it will be necessary to
 # relaunch the shell.
 pgem_reload() {
+  local ret=0 # set before populating pgem_pre.env
   $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
   export PATH="$_PRE_PGEM_PATH"
-  export PS1="$_PRE_PGEM_PS1"
-  export PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
+  [[ -n "$_PRE_PGEM_PS1" ]] && export PS1="$_PRE_PGEM_PS1"
+  [[ -n "$_PRE_PGEM_PROMPT_COMMAND" ]] &&
+    export PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
 
   pushd "$_PRE_PGEM_PWD" > /dev/null
   . "${_PGEM_LOC}/load.sh"
-  local ret=$?
+  ret=$?
   popd > /dev/null
 
   if $_PGEM_DEBUG
