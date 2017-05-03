@@ -1,25 +1,7 @@
-# This is a sample build configuration for other languages.
-# Check our guides at https://confluence.atlassian.com/x/VYk8Lw for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-# image: docker-image:tag
+image: dimo414/ci-profilegem
 
 pipelines:
   default:
     - step:
         script:
-          - touch local.conf.sh
-          - ./load.sh
-          - ./load.sh pgem_help
-          - ./load.sh pgem_info
-          - ./load.sh pgem_reload
-          - ./load.sh pgem_update
-          - cp -R template empty.gem
-          - touch empty.gem/noupdate # doesn't test any of the update behavior
-          - echo '#GEM empty' > local.conf.sh
-          - ./load.sh
-          - ./load.sh pgem_info
-          - ./load.sh pgem_info empty
-          - ./load.sh pgem_reload
-          - ./load.sh pgem_update
+          - /pgem_test/pgem_test.sh
