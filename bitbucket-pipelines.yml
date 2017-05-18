@@ -4,5 +4,4 @@ pipelines:
   default:
     - step:
         script:
-          - hg version
           - /pgem_test/pgem_test.sh
