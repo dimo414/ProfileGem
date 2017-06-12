@@ -4,4 +4,5 @@ pipelines:
   default:
     - step:
         script:
+          - echo hello world
           - /pgem_test/pgem_test.sh
