@@ -34,9 +34,10 @@ pgem_reload() {
 # Pulls in updates to ProfileGem and all gems, then reloads them.
 pgem_update() {
   _PGEM_LOAD_EXIT_CODE=0
+  # Must avoid subshells so _PGEM_LOAD_EXIT_CODE is properly set
   pushd "$_PGEM_LOC" > /dev/null
   _eachGem _updateRepo
-  _updateRepo # update ProfileGem
+  _updateRepo || _PGEM_LOAD_EXIT_CODE=$? # update ProfileGem
   popd > /dev/null
   pgem_reload
 }
