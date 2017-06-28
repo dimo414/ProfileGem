@@ -7,7 +7,7 @@
 # the users or hosts directory, respectively).
 # 
 # Example structure is below, replace with references to the gems you wish to load
-# The critical line is the line begining with '#GEM' - this specifies a gem to be
+# The critical line is the line beginning with '#GEM' - this specifies a gem to be
 # loaded by ProfileGem.  The remainder of the file is a simple bash script, you're
 # suggested to organize the file into #GEM comments followed by settings related
 # to that gem - generally overriding values in that gem's base.conf.sh.

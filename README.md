@@ -81,7 +81,7 @@ like this:
     #GEM myshell
     HOST_COLOR=RED
 
-The `myshell.gem` will configure the `$PS1` but use the overriden `$HOST_COLOR`. Now each machine
+The `myshell.gem` will configure the `$PS1` but use the overridden `$HOST_COLOR`. Now each machine
 you use can have a custom prompt with no fuss.
 
 ## Public Gems
