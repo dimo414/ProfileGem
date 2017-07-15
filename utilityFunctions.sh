@@ -48,7 +48,7 @@ pgem_add_path() {
 pgem_decorate() {
   local func="${1:?"Must provide a function name to decorate"}"
   local prefix="${2:-"_orig_"}"
-  if declare -F ${prefix}${func} >& /dev/null; then
+  if declare -F ${prefix}${func} &> /dev/null; then
     # This function has previously been decorated; restore the original version
     copy_function "${prefix}${func}" "${func}"
   fi
@@ -61,7 +61,7 @@ pgem_decorate() {
 copy_function() {
   local function="${1:?Missing function}"
   local new_name="${2:?Missing new function name}"
-  declare -F "$function" >& /dev/null || { echo "No such function $1"; return 1; }
+  declare -F "$function" &> /dev/null || { echo "No such function $1"; return 1; }
   eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
 }
 

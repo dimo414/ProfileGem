@@ -5,7 +5,7 @@
 
 # Given a relative path, prints an absolute path
 _realpath() {
-  if command -v realpath >& /dev/null
+  if command -v realpath &> /dev/null
   then
     realpath "$1"
   else
