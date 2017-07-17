@@ -26,7 +26,8 @@ _dispPath() {
 
 # Print a warning if ProfileGem hasn't been updated recently
 _check_out_of_date() {
-  if [[ "$(find "$_PGEM_LAST_UPDATE_MARKER" -newermt '-1 month')" == "" ]]; then
+  [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]] || { touch "$_PGEM_LAST_UPDATE_MARKER" && return; }
+  if [[ "$(find "$_PGEM_LOC" -maxdepth 1 -path "$_PGEM_LAST_UPDATE_MARKER" -newermt '-1 month')" == "" ]]; then
     pgem_err 'ProfileGem is more than a month out of date; run `pgem_update` to update.'
     pgem_err '  Or run `pgem_snooze_update` to snooze this message.'
     pgem_snooze_update() {
