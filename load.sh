@@ -24,6 +24,7 @@ PGEM_VERSION=(0 9 0)
 [[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false
 [[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
+_PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 pushd "$_PGEM_LOC" > /dev/null
 
@@ -49,6 +50,7 @@ _eachGem _loadFuncs         # define functions
 _eachGem _loadScripts       # add scripts to path
 
 if [[ ! -z "$PS1" ]]; then  # interactive shell
+  _check_out_of_date
   if $PGEM_INFO_ON_START; then
     pgem_info
   fi

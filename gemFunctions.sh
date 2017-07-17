@@ -38,6 +38,8 @@ pgem_update() {
   pushd "$_PGEM_LOC" > /dev/null
   _eachGem _updateRepo
   _updateRepo || _PGEM_LOAD_EXIT_CODE=$? # update ProfileGem
+  touch "$_PGEM_LAST_UPDATE_MARKER"
+  unset -f pgem_snooze_update
   popd > /dev/null
   pgem_reload
 }

@@ -3,3 +3,4 @@ glob:.buildpath
 glob:.pydevproject
 glob:local.conf.sh
 re:.*\.gem
+glob:.last_updated
