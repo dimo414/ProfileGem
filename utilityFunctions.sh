@@ -6,7 +6,26 @@
 # Print a message to stderr
 pgem_err() { echo "$@" >&2; }
 # Print a message to stderr if debug logging enabled
-pgem_log() { $_PGEM_DEBUG && pgem_err "$@"; }
+pgem_log() { "$_PGEM_DEBUG" && pgem_err "$@"; }
+# Prints a stack trace to stderr
+# pass "$@" to include the current functions arguments in the trace
+pgem_trace() { _pgem_trace_impl "$@"; }
+# Prints a stack trace to stderr if debug logging enabled
+# pass "$@" to include the current functions arguments in the trace
+pgem_debug_trace() { "$_PGEM_DEBUG" && _pgem_trace_impl "$@"; }
+
+# Prints a stack trace trimming the first two frames, as this will be called by
+# pgem_trace or pgem_debug_trace.
+_pgem_trace_impl() {
+  local skip_frames=2
+  local cmd="${FUNCNAME[$skip_frames]}"
+  (( $# )) && cmd="${cmd}$(printf " %q" "$@")"
+  pgem_err 'Stack trace while executing command: `'"$cmd"'`';
+  local i
+  for (( i=$skip_frames; i<${#FUNCNAME[@]}; i++ )); do
+    pgem_err $'\t'"${FUNCNAME[$i]} at ${BASH_SOURCE[$i]}:${BASH_LINENO[$i]/#0/??}";
+  done
+}
 
 # Adds a directory to the front of PATH, allowing ProfileGem to manage PATH
 # rather than each gem doing so individually.
