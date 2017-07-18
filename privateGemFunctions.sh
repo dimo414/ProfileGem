@@ -5,7 +5,7 @@
 
 # Given a relative path, prints an absolute path
 _realpath() {
-  if command -v realpath >& /dev/null
+  if command -v realpath &> /dev/null
   then
     realpath "$1"
   else
@@ -22,6 +22,19 @@ _realpath() {
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
 _dispPath() {
   _realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
+}
+
+# Print a warning if ProfileGem hasn't been updated recently
+_check_out_of_date() {
+  [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]] || { touch "$_PGEM_LAST_UPDATE_MARKER" && return; }
+  if [[ "$(find "$_PGEM_LOC" -maxdepth 1 -path "$_PGEM_LAST_UPDATE_MARKER" -newermt '-1 month')" == "" ]]; then
+    pgem_err 'ProfileGem is more than a month out of date; run `pgem_update` to update.'
+    pgem_err '  Or run `pgem_snooze_update` to snooze this message.'
+    pgem_snooze_update() {
+      touch "$_PGEM_LAST_UPDATE_MARKER"
+      unset -f pgem_snooze_update
+    }
+  fi
 }
 
 # Checks that the config file exists, and returns its name
