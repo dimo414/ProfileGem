@@ -3,11 +3,6 @@
 # A collection of helper functions that are intended to be used by Gems
 #
 
-# TODO scheduled for deletion on June 1st, 2017
-# Usages should be migrated to pgem_err and pgem_log
-err() { pgem_err "WARN - this gem should be using pgem_err"; pgem_err "$@"; }
-log() { pgem_err "WARN - this gem should be using pgem_log"; pgem_err "$@"; }
-
 # Print a message to stderr
 pgem_err() { echo "$@" >&2; }
 # Print a message to stderr if debug logging enabled
