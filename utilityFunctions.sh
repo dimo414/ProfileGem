@@ -75,8 +75,10 @@ pgem_decorate() {
 copy_function() {
   local function="${1:?Missing function}"
   local new_name="${2:?Missing new function name}"
-  declare -F "$function" &> /dev/null || { echo "No such function $1"; return 1; }
-  eval "$(echo "${new_name}()"; declare -f "${1}" | tail -n +2)"
+  declare -F "$function" &> /dev/null || {
+    echo "No such function ${function}"; return 1
+  }
+  eval "$(echo "${new_name}()"; declare -f "$function" | tail -n +2)"
 }
 
 
