@@ -85,7 +85,7 @@ _incomingRepo() {
       echo "$dir is $incoming change(s) behind."
     fi
   fi
-}
+} && bc::cache _incomingRepo PWD
 
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
 # Alternatively create an update.sh script in the current directory to specify

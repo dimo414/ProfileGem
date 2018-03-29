@@ -62,25 +62,20 @@ pgem_add_path() {
 pgem_decorate() {
   local func="${1:?"Must provide a function name to decorate"}"
   local prefix="${2:-"_orig_"}"
-  if declare -F ${prefix}${func} &> /dev/null; then
+  if declare -F "${prefix}${func}" &> /dev/null; then
     # This function has previously been decorated; restore the original version
-    copy_function "${prefix}${func}" "${func}"
+    bc::copy_function "${prefix}${func}" "${func}"
   fi
-  copy_function "${func}" "${prefix}${func}"
+  bc::copy_function "${func}" "${prefix}${func}"
 }
 
 # Given a name and an existing function, create a new function called name that
 # executes the same commands as the initial function.
-# Used by pgem_decorate.
+# Scheduled for removal in Aug 2018
 copy_function() {
-  local function="${1:?Missing function}"
-  local new_name="${2:?Missing new function name}"
-  declare -F "$function" &> /dev/null || {
-    echo "No such function ${function}"; return 1
-  }
-  eval "$(echo "${new_name}()"; declare -f "$function" | tail -n +2)"
+  pgem_log "copy_function is deprecated, please use bc::copy_function instead"
+  bc::copy_function "$@"
 }
-
 
 # Prompt the user to confirm (y/n), defaulting to no.
 # Returns a non-zero exit code on no.

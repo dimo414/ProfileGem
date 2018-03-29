@@ -28,6 +28,7 @@ _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 pushd "$_PGEM_LOC" > /dev/null
 
+source ./bash-cache.sh
 source ./privateGemFunctions.sh
 source ./gemFunctions.sh
 source ./utilityFunctions.sh
