@@ -6,13 +6,22 @@
 # Bundled from http://hg.mwdiamond.com/bash-cache - GPL licensed.
 
 # Configuration
-_bc_cache_dir="${TMPDIR:-/tmp}/bash-cache"
+if [[ -n "$_BC_TESTONLY_CACHE_DIR" ]]; then
+  _bc_cache_dir="$_BC_TESTONLY_CACHE_DIR"
+else
+  _bc_cache_dir="${BC_CACHE_DIR:-${TMPDIR:-/tmp}}/bash-cache-$(id -u)"
+fi
 _bc_enabled=true
-_bc_version=(0 2 0)
+_bc_version=(0 4 0)
 : $_bc_enabled # satisfy SC2034
 : ${#_bc_version} # satisfy SC2034
 
-mkdir -p "$_bc_cache_dir"
+bc::_ensure_cache_dir_exists() {
+  [[ -d "$_bc_cache_dir" ]] && return
+  mkdir -p "$_bc_cache_dir" &&
+    # Cache dir should only be accessible to current user
+    chmod 700 "$_bc_cache_dir"
+}
 
 # Hash function used to key cached results.
 # Implementation is selected dynamically to support different environments (notably OSX provides
@@ -37,11 +46,17 @@ else
   bc::_modtime() { stat -f %m "$@" 2>/dev/null || { echo 0; return 1; }; } # BSD/OSX stat
 fi
 
+if printf "%(%s)T" -1 &> /dev/null; then
+  bc::_now() { printf "%(%s)T" -1; } # Modern Bash
+else
+  bc::_now() { date +'%s'; } # Fallback
+fi
+
 # Succeeds if the given FILE is less than SECONDS old (according to its modtime)
 bc::_newer_than() {
   local modtime curtime seconds
   modtime=$(bc::_modtime "${1:?Must provide a FILE}") || return
-  curtime=$(date +'%s') || return
+  curtime=$(bc::_now) || return
   seconds=${2:?Must provide a number of SECONDS}
   (( modtime > curtime - seconds ))
 }
@@ -52,13 +67,18 @@ bc::_newer_than() {
 bc::_read_input() {
   # Use unusual variable names to avoid colliding with a variable name
   # the user might pass in (notably "contents")
-  local __line __contents __varname
-  __varname=${1:?Must provide a variable to read into}
-   while read -r __line; do
-     __contents="${__contents}${__line}"$'\n'
+  : "${1:?Must provide a variable to read into}"
+  if [[ "$1" == '_line' || "$1" == '_contents' ]]; then
+    echo "Cannot store contents to $1, use a different name." >&2
+    return 1
+  fi
+
+  local _line _contents
+   while read -r _line; do
+     _contents="${_contents}${_line}"$'\n'
    done
-   __contents="${__contents}${__line}" # capture any content after the last newline
-   printf -v "$__varname" '%s' "$__contents"
+   _contents="${_contents}${_line}" # capture any content after the last newline
+   printf -v "$1" '%s' "$_contents"
 }
 
 # Given a name and an existing function, create a new function called name that
@@ -76,6 +96,17 @@ bc::copy_function() {
 # to their bc::orig:: function.
 bc::on()  { _bc_enabled=true;  }
 bc::off() { _bc_enabled=false; }
+
+# Captures function output and writes to disc
+bc::_write_cache() {
+  func=${1:?Must provide a function to cache}
+  : "${cachepath:?Must provide a cachepath to link to as an environment variable}"
+  bc::_ensure_cache_dir_exists
+  local cmddir
+  cmddir=$(mktemp -d "$_bc_cache_dir/XXXXXXXXXX") || return
+  "bc::orig::$func" "$@" > "$cmddir/out" 2> "$cmddir/err"; printf '%s' $? > "$cmddir/exit"
+  ln -sfn "$cmddir" "$cachepath" # atomic
+}
 
 
 # Given a function - and optionally a list of environment variables - Decorates
@@ -100,30 +131,26 @@ bc::cache() {
   shift
   bc::copy_function "${func}" "bc::orig::${func}" || return
   local env="${func}:"
-  for v in "$@"
-  do
+  for v in "$@"; do
     env="$env:\$$v"
   done
   eval "$(cat <<EOF
-    bc::_cache::$func() {
-      : "\${cachepath:?"Must provide a cachepath to link to as an environment variable"}"
-      mkdir -p "\$_bc_cache_dir"
-      local cmddir
-      cmddir=\$(mktemp -d "\$_bc_cache_dir/XXXXXXXXXX") || return
-      bc::orig::$func "\$@" > "\$cmddir/out" 2> "\$cmddir/err"; printf '%s' \$? > "\$cmddir/exit"
-      ln -sfn "\$cmddir" "\$cachepath" # atomic
+    bc::warm::$func() {
+      ( {
+        local cachepath
+        cachepath="\$_bc_cache_dir/\$(bc::_hash "\${*}::${env}")"
+        bc::_write_cache "$func" "\$@"
+       } & )
     }
 EOF
   )"
   eval "$(cat <<EOF
     $func() {
       \$_bc_enabled || { bc::orig::$func "\$@"; return; }
-      # Clean up stale caches in the background
-      (find "\$_bc_cache_dir" -not -path "\$_bc_cache_dir" -not -newermt '-1 minute' -delete &)
+      ( bc::_cleanup & ) # Clean up stale caches in the background
 
-      local arghash cachepath
-      arghash=\$(bc::_hash "\${*}::${env}")
-      cachepath=\$_bc_cache_dir/\$arghash
+      local cachepath
+      cachepath="\$_bc_cache_dir/\$(bc::_hash "\${*}::${env}")"
 
       # Read from cache - capture output once to avoid races
       # Note redirecting stderr to /dev/null comes first to suppress errors due to missing stdin
@@ -134,13 +161,13 @@ EOF
 
       if [[ "\$exit" == "" ]]; then
         # No cache, execute in foreground
-        bc::_cache::$func "\$@"
+        bc::_write_cache "$func" "\$@"
         bc::_read_input out < "\$cachepath/out"
         bc::_read_input err < "\$cachepath/err"
         bc::_read_input exit < "\$cachepath/exit"
       elif ! bc::_newer_than "\$cachepath/exit" 10; then
         # Cache exists but is old, refresh in background
-        ( bc::_cache::$func "\$@" & )
+        ( bc::_write_cache "$func" "\$@" & )
       fi
 
       # Output cached result
@@ -150,4 +177,13 @@ EOF
     }
 EOF
   )"
+}
+
+bc::_cleanup() {
+  bc::_newer_than "$_bc_cache_dir/cleanup" 60 && return
+  touch "$_bc_cache_dir/cleanup"
+  cd / || return # necessary because find will cd back to the cwd, which can fail
+  find "$_bc_cache_dir" -not -path "$_bc_cache_dir" -not -newermt '-1 minute' -delete
+  find "$_bc_cache_dir" -xtype l -delete
+  cd - > /dev/null || return
 }
