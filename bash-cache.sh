@@ -12,10 +12,11 @@ else
   _bc_cache_dir="${BC_CACHE_DIR:-${TMPDIR:-/tmp}}/bash-cache-$(id -u)"
 fi
 _bc_enabled=true
-_bc_version=(0 4 1)
+_bc_version=(0 5 0)
 : $_bc_enabled # satisfy SC2034
 : ${#_bc_version} # satisfy SC2034
 
+# Ensures the cache dir exists. If it does not creates the directory and restricts its permissions.
 bc::_ensure_cache_dir_exists() {
   [[ -d "$_bc_cache_dir" ]] && return
   mkdir -p "$_bc_cache_dir" &&
@@ -34,8 +35,8 @@ else
   bc::_hash() { cksum <<<"$*"; }
 fi
 
-# Gets the time of last file modification in seconds since the epoc. Prints 0 and fails if file does
-# not exist.
+# Gets the time of last file modification in seconds since the epoch. Prints 0 and fails if file
+# does not exist.
 # Implementation is selected dynamically to support different environments (notably BSD/OSX and GNU
 # stat have different semantics)
 # Found https://stackoverflow.com/a/17907126/113632 after implementing this, could also use date
@@ -46,6 +47,8 @@ else
   bc::_modtime() { stat -f %m "$@" 2>/dev/null || { echo 0; return 1; }; } # BSD/OSX stat
 fi
 
+# Gets the current system time in seconds since the epoch.
+# Modern Bash can use the printf builtin, older Bash must call out to date.
 if printf "%(%s)T" -1 &> /dev/null; then
   bc::_now() { printf "%(%s)T" -1; } # Modern Bash
 else
@@ -99,7 +102,7 @@ bc::off() { _bc_enabled=false; }
 
 # Captures function output and writes to disc
 bc::_write_cache() {
-  func=${1:?Must provide a function to cache}
+  func=${1:?Must provide a function to cache}; shift
   : "${cachepath:?Must provide a cachepath to link to as an environment variable}"
   bc::_ensure_cache_dir_exists
   local cmddir
@@ -108,6 +111,16 @@ bc::_write_cache() {
   ln -sfn "$cmddir" "$cachepath" # atomic
 }
 
+# Triggers a cleanup of stale cache records at most once every 60 seconds.
+bc::_cleanup() {
+  [[ -d "$_bc_cache_dir" ]] || return
+  bc::_newer_than "$_bc_cache_dir/cleanup" 60 && return
+  touch "$_bc_cache_dir/cleanup"
+  cd / || return # necessary because find will cd back to the cwd, which can fail
+  find "$_bc_cache_dir" -not -path "$_bc_cache_dir" -not -newermt '-1 minute' -delete
+  find "$_bc_cache_dir" -xtype l -delete
+  cd - > /dev/null || return
+}
 
 # Given a function - and optionally a list of environment variables - Decorates
 # the function with a short-term caching mechanism, useful for improving the
@@ -127,8 +140,7 @@ bc::_write_cache() {
 # It'd be nice to do something like write out,err,exit to a single file (e.g.
 # base64 encoded, newline separated), but uuencode isn't always installed.
 bc::cache() {
-  func="${1:?"Must provide a function name to cache"}"
-  shift
+  func="${1:?"Must provide a function name to cache"}"; shift
   bc::copy_function "${func}" "bc::orig::${func}" || return
   local env="${func}:"
   for v in "$@"; do
@@ -179,12 +191,41 @@ EOF
   )"
 }
 
-bc::_cleanup() {
-  [[ -d "$_bc_cache_dir" ]] || return
-  bc::_newer_than "$_bc_cache_dir/cleanup" 60 && return
-  touch "$_bc_cache_dir/cleanup"
-  cd / || return # necessary because find will cd back to the cwd, which can fail
-  find "$_bc_cache_dir" -not -path "$_bc_cache_dir" -not -newermt '-1 minute' -delete
-  find "$_bc_cache_dir" -xtype l -delete
-  cd - > /dev/null || return
+# Prints the real-time to execute the given command, discarding its output.
+bc::_time() {
+  (
+    TIMEFORMAT=%R
+    time "$@" &> /dev/null
+  ) 2>&1
+}
+
+# Benchmarks a function, printing the function's raw runtime as well as with a cold and warm cache.
+# Runs in a subshell and can be used with any function, whether or not it's been cached already.
+bc::benchmark() {
+  local func=${1:?Must specify a function to benchmark}
+  shift
+  if ! declare -F "$func" &> /dev/null; then
+    echo "No such function ${func}" >&2
+    return 1
+  fi
+  # Drop into a subshell so the benchmark doesn't affect the calling shell
+  (
+    _bc_cache_dir=$(mktemp -d "${TMPDIR:-/tmp}/bc-benchmark-XXXXXX") || return
+    TIMEFORMAT='%R'
+
+    # Undo the caching if $func has already been cached - no-op otherwise
+    bc::copy_function "bc::orig::${func}" "${func}" &> /dev/null || true
+    # Cache (or re-cache) the function
+    # Doesn't include any env vars in the key, which is probably fine for most benchmarks
+    bc::cache "${func}"
+
+    local raw cold warm
+    raw="$(bc::_time "bc::orig::${func}" "$@")"
+    cold="$(bc::_time "$func" "$@")"
+    warm="$(bc::_time "$func" "$@")"
+
+    printf 'Original:\t%s\nCold Cache:\t%s\nWarm Cache:\t%s\n' "$raw" "$cold" "$warm"
+
+    rm -rf "$_bc_cache_dir" # not the "real" cache dir
+  )
 }
