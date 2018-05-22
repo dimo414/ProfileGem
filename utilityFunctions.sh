@@ -92,3 +92,38 @@ pgem_confirm_no() {
   read -r -p "${*:-"Would you like to continue?"} [Y/n] " response
   ! [[ "$response" =~ ^([nN][oO]|[nN])$ ]]
 }
+
+# Installs a stub function named $1 if no such command is installed. The stub
+# will prompt the user to install the missing command. This isn't generally
+# necessary, but can be helpful when the command is used indirectly by a
+# function provided by a gem and you can provide more details than the shell's
+# built in command-not-found message.
+#
+# For example, if a function depends on ag the gem could add the following to
+# its command.sh to point users in the right direction:
+#    pgem_require ag 'Install via https://github.com/ggreer/the_silver_searcher'
+#
+# Once the command is installed the stub function removes itself.
+pgem_require() {
+  local cmd="${1:?cmd}"
+  local msg="${2:?msg}"
+
+  # This early check might increase startup time, especially if a gem calls
+  # pgem_require many times. It might be better to remove it so the function
+  # is always eval'ed - it will transparently remove itself upon being called.
+  which "$cmd" &> /dev/null && return # already installed
+
+  eval "$(cat <<EOF
+    $cmd() {
+      if which $cmd &> /dev/null; then
+        unset -f $cmd
+        $cmd "\$@"
+        return
+      fi
+
+      printf '%s not available\n%s\n' $cmd '$msg' >&2
+      return 127
+    }
+EOF
+  )"
+}
