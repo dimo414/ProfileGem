@@ -4,9 +4,8 @@
 #
 
 # Given a relative path, prints an absolute path
-_realpath() {
-  if command -v realpath &> /dev/null
-  then
+pg::_realpath() {
+  if command -v realpath &> /dev/null; then
     realpath "$1"
   else
     # readlink -f doesn't exist on OSX, so can't use readlink
@@ -20,12 +19,12 @@ _realpath() {
 
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
-_dispPath() {
-  _realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
+pg::_dispPath() {
+  pg::_realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
 }
 
 # Print a warning if ProfileGem hasn't been updated recently
-_check_out_of_date() {
+pg::_check_out_of_date() {
   [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]] || { touch "$_PGEM_LAST_UPDATE_MARKER" && return; }
   if [[ "$(find "$_PGEM_LOC" -maxdepth 1 -path "$_PGEM_LAST_UPDATE_MARKER" -newermt '-1 month')" == "" ]]; then
     pgem_err 'ProfileGem is more than a month out of date; run `pgem_update` to update.'
@@ -38,7 +37,7 @@ _check_out_of_date() {
 }
 
 # Checks that the config file exists, and returns its name
-_configFile() {
+pg::_configFile() {
   local conf_file='local.conf.sh'
   echo "$conf_file"
   if ! [[ -f "$conf_file" ]]; then
@@ -48,7 +47,7 @@ _configFile() {
 }
 
 # Run "$@" in each gem - should generally be a function
-_eachGem() {
+pg::_eachGem() {
   pushd "$_PGEM_LOC" > /dev/null
   local i
   for i in "${!_GEMS[@]}"; do
@@ -75,7 +74,7 @@ _eachGem() {
 # Prints a line describing the status of a local repo vs. its remote source.
 # No output means no (known) changes to pull.
 # Currently only supports hg
-_incomingRepo() {
+pg::_incomingRepo() {
   local dir
   dir=$(basename "$PWD")
   if [[ -d ".hg" ]]; then
@@ -85,12 +84,12 @@ _incomingRepo() {
       echo "$dir is $incoming change(s) behind."
     fi
   fi
-} && bc::cache _incomingRepo PWD
+} && bc::cache pg::_incomingRepo PWD
 
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
 # Alternatively create an update.sh script in the current directory to specify
 # custom update behavior
-_updateRepo() {
+pg::_updateRepo() {
   local dir
   dir=$(basename "$PWD")
   if [[ -f "noupdate" ]]; then
@@ -116,41 +115,41 @@ _updateRepo() {
 }
 
 # Sources a file if it exists, skips if not
-_srcIfExist() {
+pg::_srcIfExist() {
   if [[ -f "$1" ]];  then
-    pgem_log "Including $(_dispPath "$1")"
+    pgem_log "Including $(pg::_dispPath "$1")"
     # shellcheck disable=SC1090
     . "$1"
   fi
 }
 
 # Initialize environment
-_loadBase() {  _srcIfExist "base.conf.sh"; }
+pg::_loadBase() {  pg::_srcIfExist "base.conf.sh"; }
 
-# Evaluates the config file - not called by _eachGem
-_evalConfig() {  _srcIfExist "$(_configFile)"; }
+# Evaluates the config file - not called by pg::_eachGem
+pg::_evalConfig() {  pg::_srcIfExist "$(pg::_configFile)"; }
 
 # Set environment variables
-_loadEnv() {  _srcIfExist "environment.sh"; }
+pg::_loadEnv() {  pg::_srcIfExist "environment.sh"; }
 
 # Load aliases
-_loadAlias() { _srcIfExist "aliases.sh"; }
+pg::_loadAlias() { pg::_srcIfExist "aliases.sh"; }
 
 # Define functions
-_loadFuncs() { _srcIfExist "functions.sh"; }
+pg::_loadFuncs() { pg::_srcIfExist "functions.sh"; }
 
 # Add scripts directory to PATH
-_loadScripts() {
+pg::_loadScripts() {
   if [[ -d "scripts" ]]; then
     pgem_add_path "scripts"
   fi
 }
 
 # Run commands
-_loadCmds() { _srcIfExist "commands.sh"; }
+pg::_loadCmds() { pg::_srcIfExist "commands.sh"; }
 
 # Output first paragraph of info.txt, indented
-_printDocLead() {
+pg::_printDocLead() {
   echo "$(basename $PWD)"
   if [[ -f "info.txt" ]]; then
     # http://stackoverflow.com/a/1603584/113632
@@ -161,8 +160,16 @@ _printDocLead() {
 }
 
 # Output info.txt and check for incoming changes
-_printDoc() {
+pg::_printDoc() {
   if [[ -f "info.txt" ]]; then
     cat "info.txt"
   fi
 }
+
+# Deprecated function names - nothing should be calling these anymore
+# Safe to delete after June 10
+for f in _realpath _dispPath _check_out_of_date _configFile _eachGem _incomingRepo _updateRepo \
+         _srcIfExist _loadBase _loadEnv _loadAlias _loadFuncs _loadScripts _loadCmds _printDocLead \
+         _printDoc; do
+  eval "$f() { pgem_err '$f is deprecated'; pg::$f "'"$@"'"; }"
+done

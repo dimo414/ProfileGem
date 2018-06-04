@@ -23,39 +23,39 @@ PGEM_VERSION=(0 10 0)
 [[ -z "$PGEM_INFO_ON_START" ]] && PGEM_INFO_ON_START=false
 [[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false
 [[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
-_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use _realpath yet
+_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::_realpath yet
 _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 pushd "$_PGEM_LOC" > /dev/null
 
 source ./bash-cache.sh
-source ./privateGemFunctions.sh
+source ./private.sh
 source ./gemFunctions.sh
 source ./utilityFunctions.sh
 
 # Populate the list of enabled gems
 _GEMS=()
-for gem in $(grep '^#GEM' "$_PGEM_LOC/$(_configFile)" | awk '{ print $2 ".gem" }'); do
+for gem in $(grep '^#GEM' "$_PGEM_LOC/$(pg::_configFile)" | awk '{ print $2 ".gem" }'); do
   _GEMS+=($gem)
 done
 pgem_log "About to load gems: ${_GEMS[@]}"
 
 # TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
-_eachGem _loadBase          # initialize environment, executed before config file is parsed
-_evalConfig                 # executes the commands in the config file
+pg::_eachGem pg::_loadBase      # initialize environment, executed before config file is parsed
+pg::_evalConfig                 # executes the commands in the config file
 # TODO perhaps there should be a separate step between base.conf.sh and environment.sh
 # so that all gems, not just earlier gems, can configure each other
-_eachGem _loadEnv           # set environment variables
-_eachGem _loadAlias         # create aliases
-_eachGem _loadFuncs         # define functions
-_eachGem _loadScripts       # add scripts to path
+pg::_eachGem pg::_loadEnv       # set environment variables
+pg::_eachGem pg::_loadAlias     # create aliases
+pg::_eachGem pg::_loadFuncs     # define functions
+pg::_eachGem pg::_loadScripts   # add scripts to path
 
-if [[ ! -z "$PS1" ]]; then  # interactive shell
-  _check_out_of_date
+if [[ ! -z "$PS1" ]]; then      # interactive shell
+  pg::_check_out_of_date
   if $PGEM_INFO_ON_START; then
     pgem_info
   fi
-  _eachGem _loadCmds        # run interactive commands
+  pg::_eachGem pg::_loadCmds    # run interactive commands
 fi
 pgem_log # for newline
 

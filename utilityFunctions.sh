@@ -4,11 +4,11 @@
 #
 
 # Print a message to stderr
-pgem_err() { echo "$@" >&2; }
+pgem_err() { printf '\e[1;31m%s\e[0m\n' "$*" >&2; }
 # Print a message to stderr if debug logging enabled
-pgem_log() { "$_PGEM_DEBUG" && pgem_err "$@"; }
+pgem_log() { "$_PGEM_DEBUG" && printf '\e[35m%s\e[0m\n' "$*" >&2; }
 # Prints a stack trace to stderr
-# pass "$@" to include the current functions arguments in the trace
+# pass "$@" to include the current function's arguments in the trace
 pgem_trace() { _pgem_trace_impl "$@"; }
 # Prints a stack trace to stderr if debug logging enabled
 # pass "$@" to include the current functions arguments in the trace
@@ -38,7 +38,7 @@ pgem_add_path() {
     local absPath=$1
     # don't resolve symlinks unless the user provides a relative path
     if [[ "${absPath:0:1}" != "/" ]]; then
-      absPath=$(_realpath "$1")
+      absPath=$(pg::_realpath "$1")
   fi
     pgem_log "Adding $absPath to the PATH"
     export PATH="$absPath:$PATH"

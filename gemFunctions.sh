@@ -36,8 +36,8 @@ pgem_update() {
   _PGEM_LOAD_EXIT_CODE=0
   # Must avoid subshells so _PGEM_LOAD_EXIT_CODE is properly set
   pushd "$_PGEM_LOC" > /dev/null
-  _eachGem _updateRepo
-  _updateRepo || _PGEM_LOAD_EXIT_CODE=$? # update ProfileGem
+  pg::_eachGem pg::_updateRepo
+  pg::_updateRepo || _PGEM_LOAD_EXIT_CODE=$? # update ProfileGem
   touch "$_PGEM_LAST_UPDATE_MARKER"
   unset -f pgem_snooze_update
   popd > /dev/null
@@ -50,8 +50,8 @@ pgem_info() {
     local gem="${1%.gem}.gem" # supports "foo" or "foo.gem"
     if [[ -d "$_PGEM_LOC/$gem" ]]; then
       pushd "$_PGEM_LOC/$gem" > /dev/null
-      _incomingRepo
-      _printDoc
+      pg::_incomingRepo
+      pg::_printDoc
       popd > /dev/null
     else
       pgem_err "No such gem $gem"
@@ -61,8 +61,8 @@ pgem_info() {
     pushd "$_PGEM_LOC" > /dev/null
     echo "ProfileGem v${PGEM_VERSION[0]}.${PGEM_VERSION[1]}.${PGEM_VERSION[2]}"
     echo
-    _incomingRepo
-    _eachGem _printDocLead
+    pg::_incomingRepo
+    pg::_eachGem pg::_printDocLead
     echo
     echo "Run pgem_help for ProfileGem usage, or pgem_info GEM_NAME for gem details."
     popd > /dev/null
