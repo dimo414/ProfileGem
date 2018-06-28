@@ -54,7 +54,7 @@ pgem_info() {
       pg::_printDoc
       popd > /dev/null
     else
-      pgem_err "No such gem $gem"
+      pg::err "No such gem $gem"
       return 1
     fi
   else
@@ -92,7 +92,7 @@ Debug Mode
 
 Setting _PGEM_DEBUG=true either in your .bashrc or your current terminal
 enables debug output. pgem_reload provides more details about the reloading
-process, and gems can provide their own debug output by calling pgem_log.
+process, and gems can provide their own debug output by calling pg::log.
 
 Creating a Gem
 

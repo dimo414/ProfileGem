@@ -38,7 +38,7 @@ _GEMS=()
 for gem in $(grep '^#GEM' "$_PGEM_LOC/$(pg::_configFile)" | awk '{ print $2 ".gem" }'); do
   _GEMS+=($gem)
 done
-pgem_log "About to load gems: ${_GEMS[@]}"
+pg::log "About to load gems: ${_GEMS[@]}"
 
 # TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
 pg::_eachGem pg::_loadBase      # initialize environment, executed before config file is parsed
@@ -57,7 +57,7 @@ if [[ ! -z "$PS1" ]]; then      # interactive shell
   fi
   pg::_eachGem pg::_loadCmds    # run interactive commands
 fi
-pgem_log # for newline
+pg::log # for newline
 
 popd > /dev/null
 
@@ -65,13 +65,13 @@ if [[ -n "$START_DIR" ]]
 then
   if [[ -d "$START_DIR" ]]
   then
-    pgem_log "Switching from $(pwd) to $START_DIR"
-    pgem_log
+    pg::log "Switching from $(pwd) to $START_DIR"
+    pg::log
     # cd . sets $OLDPWD to the starting directory, usually $HOME
-    cd . || pgem_err "Could not cd to $_PRE_PGEM_PWD ...?"
-    cd "$START_DIR" || pgem_err "Could not cd to START_DIR $START_DIR"
+    cd . || pg::err "Could not cd to $_PRE_PGEM_PWD ...?"
+    cd "$START_DIR" || pg::err "Could not cd to START_DIR $START_DIR"
   else
-    pgem_err "Start dir $START_DIR does not exist!"
+    pg::err "Start dir $START_DIR does not exist!"
   fi
 fi
 

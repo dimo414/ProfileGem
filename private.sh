@@ -27,8 +27,8 @@ pg::_dispPath() {
 pg::_check_out_of_date() {
   [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]] || { touch "$_PGEM_LAST_UPDATE_MARKER" && return; }
   if [[ "$(find "$_PGEM_LOC" -maxdepth 1 -path "$_PGEM_LAST_UPDATE_MARKER" -newermt '-1 month')" == "" ]]; then
-    pgem_err 'ProfileGem is more than a month out of date; run `pgem_update` to update.'
-    pgem_err '  Or run `pgem_snooze_update` to snooze this message.'
+    pg::err 'ProfileGem is more than a month out of date; run `pgem_update` to update.'
+    pg::err '  Or run `pgem_snooze_update` to snooze this message.'
     pgem_snooze_update() {
       touch "$_PGEM_LAST_UPDATE_MARKER"
       unset -f pgem_snooze_update
@@ -41,7 +41,7 @@ pg::_configFile() {
   local conf_file='local.conf.sh'
   echo "$conf_file"
   if ! [[ -f "$conf_file" ]]; then
-    pgem_err "No ${conf_file} file found."
+    pg::err "No ${conf_file} file found."
     return 1
   fi
 }
@@ -58,11 +58,11 @@ pg::_eachGem() {
       local exit=$?
       if [[ $exit != 0 ]]; then
         _PGEM_LOAD_EXIT_CODE=$exit
-        pgem_err "'$*' failed in $gem"
+        pg::err "'$*' failed in $gem"
       fi
       popd > /dev/null
     else
-      pgem_log "$gem is not a directory."
+      pg::log "$gem is not a directory."
       # http://wiki.bash-hackers.org/syntax/arrays
       unset -v '_GEMS['"$i"']'
       _PGEM_LOAD_EXIT_CODE=10
@@ -109,7 +109,7 @@ pg::_updateRepo() {
     # TODO are their failure modes for this?
     git pull --rebase > /dev/null
   else
-    pgem_err "Could not update $dir"
+    pg::err "Could not update $dir"
     return 1
   fi
 }
@@ -117,7 +117,7 @@ pg::_updateRepo() {
 # Sources a file if it exists, skips if not
 pg::_srcIfExist() {
   if [[ -f "$1" ]];  then
-    pgem_log "Including $(pg::_dispPath "$1")"
+    pg::log "Including $(pg::_dispPath "$1")"
     # shellcheck disable=SC1090
     . "$1"
   fi
@@ -141,7 +141,7 @@ pg::_loadFuncs() { pg::_srcIfExist "functions.sh"; }
 # Add scripts directory to PATH
 pg::_loadScripts() {
   if [[ -d "scripts" ]]; then
-    pgem_add_path "scripts"
+    pg::add_path "scripts"
   fi
 }
 
@@ -171,5 +171,5 @@ pg::_printDoc() {
 for f in _realpath _dispPath _check_out_of_date _configFile _eachGem _incomingRepo _updateRepo \
          _srcIfExist _loadBase _loadEnv _loadAlias _loadFuncs _loadScripts _loadCmds _printDocLead \
          _printDoc; do
-  eval "$f() { pgem_err '$f is deprecated'; pg::$f "'"$@"'"; }"
+  eval "$f() { pg::err '$f is deprecated'; pg::$f "'"$@"'"; }"
 done
