@@ -71,6 +71,11 @@ pg::add_path() {
 # Using && prevents func from being (re)defined if it didn't previously exist.
 pg::decorate() {
   local func="${1:?"Must provide a function name to decorate"}"
+  if declare -F "${2:-"_orig_"}${func}" &> /dev/null; then
+    # This function has previously been decorated; restore the original version
+    # Safe to delete after Oct 10
+    bc::copy_function "${2:-"_orig_"}${func}" "${func}"
+  fi
   if declare -F "pg::decorated::${func}" &> /dev/null; then
     # This function has previously been decorated; restore the original version
     bc::copy_function "pg::decorated::${func}" "${func}"
@@ -79,7 +84,7 @@ pg::decorate() {
 
   # Safe to delete after Oct 10, log -> err after Aug 10
   eval "_orig_${func}() {
-    pg::log '${2:-"_orig_"}${func} is deprecated; use pg::::decorated::${func} instead'
+    pg::log '${2:-"_orig_"}${func} is deprecated; use pg::decorated::${func} instead'
     pg::debug_trace "'"$@"'"
     pg::decorated::${func} "'"$@"'"
   }"
