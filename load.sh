@@ -11,7 +11,6 @@
 # familiar shell everywhere you go.
 #
 
-
 _PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 [[ -n "$PS1" ]] && _PRE_PGEM_PS1="$PS1"
@@ -32,6 +31,18 @@ source "$PWD/bash-cache.sh"
 source "$PWD/private.sh"
 source "$PWD/gemFunctions.sh"
 source "$PWD/utilityFunctions.sh"
+
+# Decorate the source and . builtins in order to resolve absolute paths before
+# sourcing, thereby enabling more informative traces. Temporarily gated to
+# easily disable if this causes problems.
+# TODO flip the default to true, then remove gate if no issues arise
+if "${PGEM_DECORATE_SOURCE:-false}" && [[ "$(type -t source)" == "builtin" ]]; then
+  source() {
+    file=$1; shift
+    command source "$(pg::_realpath "$file")" "$@"
+  }
+  .() { source "$@"; }
+fi
 
 # Populate the list of enabled gems
 _GEMS=()
