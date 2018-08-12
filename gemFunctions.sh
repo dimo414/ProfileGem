@@ -16,7 +16,7 @@ pgem_reload() {
     PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
 
   pushd "$_PRE_PGEM_PWD" > /dev/null
-  . "${_PGEM_LOC}/load.sh"
+  source "${_PGEM_LOC}/load.sh"
   ret=$?
   popd > /dev/null
 
