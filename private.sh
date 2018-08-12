@@ -119,7 +119,7 @@ pg::_srcIfExist() {
   if [[ -f "$1" ]];  then
     pg::log "Including $(pg::_dispPath "$1")"
     # shellcheck disable=SC1090
-    . "$1"
+    source "$1"
   fi
 }
 

@@ -28,10 +28,10 @@ _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 pushd "$_PGEM_LOC" > /dev/null
 
-source ./bash-cache.sh
-source ./private.sh
-source ./gemFunctions.sh
-source ./utilityFunctions.sh
+source "$PWD/bash-cache.sh"
+source "$PWD/private.sh"
+source "$PWD/gemFunctions.sh"
+source "$PWD/utilityFunctions.sh"
 
 # Populate the list of enabled gems
 _GEMS=()
