@@ -165,11 +165,3 @@ pg::_printDoc() {
     cat "info.txt"
   fi
 }
-
-# Deprecated function names - nothing should be calling these anymore
-# Safe to delete after June 10
-for f in _realpath _dispPath _check_out_of_date _configFile _eachGem _incomingRepo _updateRepo \
-         _srcIfExist _loadBase _loadEnv _loadAlias _loadFuncs _loadScripts _loadCmds _printDocLead \
-         _printDoc; do
-  eval "$f() { pg::err '$f is deprecated'; pg::$f "'"$@"'"; }"
-done

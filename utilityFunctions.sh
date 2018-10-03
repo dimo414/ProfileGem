@@ -71,20 +71,15 @@ pg::add_path() {
 # Using && prevents func from being (re)defined if it didn't previously exist.
 pg::decorate() {
   local func="${1:?"Must provide a function name to decorate"}"
-  if declare -F "${2:-"_orig_"}${func}" &> /dev/null; then
-    # This function has previously been decorated; restore the original version
-    # Safe to delete after Oct 10
-    bc::copy_function "${2:-"_orig_"}${func}" "${func}"
-  fi
   if declare -F "pg::decorated::${func}" &> /dev/null; then
     # This function has previously been decorated; restore the original version
     bc::copy_function "pg::decorated::${func}" "${func}"
   fi
   bc::copy_function "${func}" "pg::decorated::${func}"
 
-  # Safe to delete after Oct 10, log -> err after Aug 10
+  # Safe to delete in Dec 2018
   eval "_orig_${func}() {
-    pg::log '${2:-"_orig_"}${func} is deprecated; use pg::decorated::${func} instead'
+    pg::err '${2:-"_orig_"}${func} is deprecated; use pg::decorated::${func} instead'
     pg::debug_trace "'"$@"'"
     pg::decorated::${func} "'"$@"'"
   }"
@@ -142,19 +137,12 @@ EOF
 }
 
 # Deprecated function names - gems may still be calling these
-# Safe to delete after October 10, log -> err after Aug 10
+# Safe to delete in Dec 2018
 for f in pgem_err pgem_log pgem_trace pgem_debug_trace pgem_add_path pgem_decorate pgem_confirm \
     pgem_confirm_no pgem_require; do
   eval "$f() {
-    pg::log '$f is deprecated; use pg::${f#pgem_} instead'
-    pg::debug_trace "'"$@"'"
+    pg::err '$f is deprecated; use pg::${f#pgem_} instead'
+    pg::trace "'"$@"'"
     pg::${f#pgem_} "'"$@"'"
   }"
 done
-_pgem_trace_impl() { pg::err '_pgem_trace_impl is deprecated'; pg::_trace_impl "$@"; }
-
-# Scheduled for removal in Aug 2018
-copy_function() {
-  pg::err "copy_function is deprecated, please use bc::copy_function instead"
-  bc::copy_function "$@"
-}
