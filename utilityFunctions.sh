@@ -76,13 +76,6 @@ pg::decorate() {
     bc::copy_function "pg::decorated::${func}" "${func}"
   fi
   bc::copy_function "${func}" "pg::decorated::${func}"
-
-  # Safe to delete in Dec 2018
-  eval "_orig_${func}() {
-    pg::err '${2:-"_orig_"}${func} is deprecated; use pg::decorated::${func} instead'
-    pg::debug_trace "'"$@"'"
-    pg::decorated::${func} "'"$@"'"
-  }"
 }
 
 # Prompt the user to confirm (y/n), defaulting to no.
@@ -135,14 +128,3 @@ pg::require() {
 EOF
   )"
 }
-
-# Deprecated function names - gems may still be calling these
-# Safe to delete in Dec 2018
-for f in pgem_err pgem_log pgem_trace pgem_debug_trace pgem_add_path pgem_decorate pgem_confirm \
-    pgem_confirm_no pgem_require; do
-  eval "$f() {
-    pg::err '$f is deprecated; use pg::${f#pgem_} instead'
-    pg::trace "'"$@"'"
-    pg::${f#pgem_} "'"$@"'"
-  }"
-done
