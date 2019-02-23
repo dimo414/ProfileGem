@@ -22,7 +22,14 @@ PGEM_VERSION=(0 10 0)
 [[ -z "$PGEM_INFO_ON_START" ]] && PGEM_INFO_ON_START=false
 [[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false
 [[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
+
+# :? does not exit from interactive shells, so we return explicitly
+if [[ -z "${BASH_SOURCE[0]}" ]]; then
+  echo "Could not determine install directory" >&2
+  return 1 2>/dev/null || exit 1
+fi
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::_realpath yet
+
 _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 pushd "$_PGEM_LOC" > /dev/null
@@ -76,7 +83,7 @@ if [[ -n "$START_DIR" ]]
 then
   if [[ -d "$START_DIR" ]]
   then
-    pg::log "Switching from $(pwd) to $START_DIR"
+    pg::log "Switching from $PWD to $START_DIR"
     pg::log
     # cd . sets $OLDPWD to the starting directory, usually $HOME
     cd . || pg::err "Could not cd to $_PRE_PGEM_PWD ...?"
