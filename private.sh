@@ -4,18 +4,20 @@
 #
 
 # Given a relative path, prints an absolute path
-pg::_realpath() {
-  if command -v realpath &> /dev/null; then
-    realpath "$1"
-  else
-    # readlink -f doesn't exist on OSX, so can't use readlink
-    if [[ -d "$1" ]]; then
+if command -v realpath &> /dev/null; then
+  pg::_realpath() { realpath "$1"; }
+elif readlink -f / &> /dev/null; then
+  pg::_realpath() { readlink -f "$1"; }
+else
+  # readlink -f doesn't exist on OSX, need to implement manually
+  pg::_realpath() {
+    if [[ -d "${1:?}" ]]; then
       (cd "$1" && pwd -P)
     else
       echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
     fi
-  fi
-}
+  }
+fi
 
 # Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
 # e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
