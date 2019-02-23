@@ -11,7 +11,6 @@
 # familiar shell everywhere you go.
 #
 
-_PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 [[ -n "$PS1" ]] && _PRE_PGEM_PS1="$PS1"
 [[ -n "$PROMPT_COMMAND" ]] && _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
@@ -93,8 +92,8 @@ then
   then
     pg::log "Switching from $PWD to $START_DIR"
     pg::log
-    # cd . sets $OLDPWD to the starting directory, usually $HOME
-    cd . || pg::err "Could not cd to $_PRE_PGEM_PWD ...?"
+    # cd . first so the second cd sets $OLDPWD to a meaningful place
+    cd . || pg::err "Could not cd to $PWD ...?"
     cd "$START_DIR" || pg::err "Could not cd to START_DIR $START_DIR"
   else
     pg::err "Start dir $START_DIR does not exist!"
