@@ -42,11 +42,19 @@ source "$PWD/utilityFunctions.sh"
 # Decorate the source and . builtins in order to resolve absolute paths before
 # sourcing, thereby enabling more informative traces. Temporarily gated to
 # easily disable if this causes problems.
-# TODO flip the default to true, then remove gate if no issues arise
-if "${PGEM_DECORATE_SOURCE:-false}" && [[ "$(type -t source)" == "builtin" ]]; then
+# TODO remove this feature-gate after May '19 if no issues arise
+if "${PGEM_DECORATE_SOURCE:-true}" && [[ "$(type -t source)" == "builtin" ]]; then
   source() {
-    file=$1; shift
-    command source "$(pg::_realpath "$file")" "$@"
+    if (( $# < 1 )); then
+      command source "$@"; return # use source's error message if no args
+    fi
+    local file=$1; shift
+    # if file looks like a path, make it absolute. Since source first searches the PATH it's not
+    # safe to just check [[ -e "$file" ]] because it might be shadowing something on the PATH.
+    if [[ "$file" == */* ]]; then
+      file=$(pg::_realpath "$file")
+    fi
+    command source "$file" "$@"
   }
   .() { source "$@"; }
 fi
