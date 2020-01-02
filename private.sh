@@ -106,9 +106,9 @@ pg::_updateRepo() {
     # find anything (i.e. someone pushed to this repo)
     # TODO this should alert more clearly if the user needs to merge heads
     hg pull > /dev/null
-    hg up -c > /dev/null
+    hg update -c tip > /dev/null
   elif [[ -d ".git" ]]; then
-    # TODO are their failure modes for this?
+    # TODO are there failure modes for this?
     git pull --rebase > /dev/null
   else
     pg::err "Could not update $dir"
