@@ -6,13 +6,13 @@
 # Print a message to stderr
 pg::err() { printf '\e[1;31m%s\e[0m\n' "$*" >&2; }
 # Print a message to stderr if debug logging enabled
-pg::log() { "$_PGEM_DEBUG" && printf '\e[35m%s\e[0m\n' "$*" >&2; }
+pg::log() { if "$_PGEM_DEBUG"; then printf '\e[35m%s\e[0m\n' "$*" >&2; fi; }
 # Prints a stack trace to stderr
 # pass "$@" to include the current function's arguments in the trace
 pg::trace() { pg::_trace_impl "$@"; }
 # Prints a stack trace to stderr if debug logging enabled
 # pass "$@" to include the current functions arguments in the trace
-pg::debug_trace() { "$_PGEM_DEBUG" && pg::_trace_impl "$@"; }
+pg::debug_trace() { if "$_PGEM_DEBUG"; then pg::_trace_impl "$@"; fi; }
 
 # Prints a stack trace trimming the first two frames, as this will be called by
 # pg::trace or pg::debug_trace.

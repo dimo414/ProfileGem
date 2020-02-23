@@ -42,6 +42,21 @@ pgem_update() {
   pgem_reload
 }
 
+# Migrates ProfileGem and any other gems with a documented migration path to
+# GitHub. Looks for a gh_migrate file in the repo root.
+pgem_migrate() {
+  pg::confirm_no "This is an undocumented experimental feature; are you sure you want to proceed?" || return
+  local backup
+  backup=$(mktemp -d) || return
+  cp -R "$_PGEM_LOC" "$backup"
+  echo "Current ProfileGem install backed up to ${backup}"
+  pushd "$_PGEM_LOC" > /dev/null
+  pg::_eachGem pg::_gh_migrate
+  pg::_gh_migrate
+  popd > /dev/null
+  pgem_reload
+}
+
 # Prints a high-level summary of all installed gems.
 pgem_info() {
   if (($#)); then
