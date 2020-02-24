@@ -1,0 +1,20 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: dimo414/ci-profilegem
+    # TODO use a bash-version matrix like bash-cache
+
+    steps:
+    - uses: actions/checkout@v2
+    # TODO add unit tests
+    #- name: Unit Tests
+    #  run: bats test
+    - name: ProfileGem Tests
+      run: /pgem_test/pgem_test.sh
+
+# TODO shellcheck job
