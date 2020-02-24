@@ -88,8 +88,8 @@ you use can have a custom prompt with no fuss.
 
 Some gems you can install right away:
 
-* [prompt.gem](https://bitbucket.org/dimo414/prompt.gem): installs a clean and extensible prompt.
-* [util.gem](https://bitbucket.org/dimo414/util.gem): several helpful and non-invasive utilities.
+* [prompt.gem](https://github.com/dimo414/prompt.gem): installs a clean and extensible prompt.
+* [util.gem](https://github.com/dimo414/util.gem): several helpful and non-invasive utilities.
 
 ## Creating A Gem
 
