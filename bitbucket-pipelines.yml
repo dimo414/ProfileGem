@@ -1,7 +1,0 @@
-image: dimo414/ci-profilegem
-
-pipelines:
-  default:
-    - step:
-        script:
-          - /pgem_test/pgem_test.sh
