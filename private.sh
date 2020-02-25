@@ -109,7 +109,7 @@ pg::_updateRepo() {
     hg update -c tip > /dev/null
   elif [[ -d ".git" ]]; then
     # TODO are there failure modes for this?
-    git pull --rebase > /dev/null
+    git pull --quiet --rebase > /dev/null
   else
     pg::err "Could not update $dir"
     return 1
