@@ -15,16 +15,36 @@ pg::trace() { pg::_trace_impl "$@"; }
 pg::debug_trace() { if "$_PGEM_DEBUG"; then pg::_trace_impl "$@"; fi; }
 
 # Prints a stack trace trimming the first two frames, as this will be called by
-# pg::trace or pg::debug_trace.
+# pg::trace or pg::debug_trace. If run in extdebug mode trace will include
+# function arguments.
+#
+# This could potentially use the caller builtin (https://unix.stackexchange.com/a/571421/19157)
+# but handling the separate variables gives a bit more flexibilty, and we need
+# to do it anyways in order to access the BASH_ARGV/BASH_ARGC vars.
 pg::_trace_impl() {
   local skip_frames=2
   local cmd="${FUNCNAME[$skip_frames]}"
   (( $# )) && cmd="${cmd}$(printf " %q" "$@")"
-  pg::err 'Stack trace while executing command: `'"$cmd"'`';
-  local i
-  for (( i=$skip_frames; i<${#FUNCNAME[@]}; i++ )); do
-    pg::err $'\t'"${FUNCNAME[i]} at ${BASH_SOURCE[i]}:${BASH_LINENO[i-1]/#0/??}";
+  pg::err 'Stack trace while executing command: `'"$cmd"$'`\n  \t'"at ${BASH_SOURCE[2]}:${BASH_LINENO[1]/#0/??}"
+  local i args
+  for (( i=skip_frames; i<${#FUNCNAME[@]}; i++ )); do
+    args=$(pg::_trace_args "$i")
+    pg::err "  ${FUNCNAME[i]}${args}"$'\n  \t'"at ${BASH_SOURCE[i+1]:-}:${BASH_LINENO[i]/#0/??}"
   done
+}
+
+# Extract arguments from BASH_ARGV for a given stack frame - if extdebug is set
+pg::_trace_args() {
+  local skip_frames=$(( ${1:?frames} + 1)) i arg_idx=0 args=()
+  for (( i=0; i<skip_frames; i++ )); do
+    (( arg_idx += ${BASH_ARGC[$i]:-0} ))
+  done
+  for (( i=0; i<${BASH_ARGC[skip_frames]:-0}; i++ )); do
+    args=("${BASH_ARGV[$(( arg_idx+i ))]}" "${args[@]}")
+  done
+  if (( ${#args[@]} )); then
+    printf ' %q' "${args[@]}"
+  fi
 }
 
 # Adds a directory to the front of PATH, allowing ProfileGem to manage PATH
