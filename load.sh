@@ -41,7 +41,9 @@ source "$PWD/utilityFunctions.sh"
 # Decorate the source and . builtins in order to resolve absolute paths before
 # sourcing, thereby enabling more informative traces. Temporarily gated to
 # easily disable if this causes problems.
-# TODO remove this feature-gate after May '19 if no issues arise
+# To disable set PGEM_DECORATE_SOURCE=false before sourcing this script.
+# Please also file a bug at https://github.com/dimo414/ProfileGem if you need to
+# do so, as this gate may be removed in the future.
 if "${PGEM_DECORATE_SOURCE:-true}" && [[ "$(type -t source)" == "builtin" ]]; then
   source() {
     if (( $# < 1 )); then
