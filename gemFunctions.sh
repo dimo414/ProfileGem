@@ -30,8 +30,10 @@ pgem_reload() {
     echo "Environment Changes:"
     # '/^[^=]*$/q;p' prints until hitting a line without an equals sign, i.e. a function declaration
     # Use comm instead of diff to avoid headers and line numbers
-    comm -3 <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_pre.env") <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_post.env") |
-      sed -e 's|^[^\t]|- \0|' -e 's|^\t|+ |'
+    comm -3 \
+        <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_pre.env" | sort) \
+        <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_post.env" | sort) \
+      | sed -e 's|^[^\t]|- \0|' -e 's|^\t|+ |'
   fi
   return "$ret"
 }
