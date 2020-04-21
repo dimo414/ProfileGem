@@ -42,7 +42,7 @@ pgem_update() {
     pg::_eachGem pg::_updateRepo
     pg::_updateRepo || _PGEM_EACHGEM_EXIT_CODE=$? # update ProfileGem
     touch "$_PGEM_LAST_UPDATE_MARKER"
-    exit "$_PGEM_EACHGEM_EXIT_CODE" # exit subshell
+    exit "${_PGEM_EACHGEM_EXIT_CODE:-0}" # exit subshell
   ) || _PGEM_EACHGEM_EXIT_CODE=$?
   unset -f pgem_snooze_update
   pgem_reload
