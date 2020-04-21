@@ -17,4 +17,12 @@ jobs:
     - name: ProfileGem Tests
       run: /pgem_test/pgem_test.sh
 
-# TODO shellcheck job
+  ShellCheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: ShellCheck
+        uses: docker://koalaman/shellcheck-alpine
+        with:
+          entrypoint: sh
+          args: -c "find . -name '*.sh' -exec shellcheck --shell=bash --exclude=1090,2034 {} +"

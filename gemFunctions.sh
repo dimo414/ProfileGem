@@ -17,6 +17,7 @@ pgem_reload() {
   export PATH="$_PRE_PGEM_PATH"
   [[ -n "$_PRE_PGEM_PS1" ]] && PS1="$_PRE_PGEM_PS1"
   # Don't reset PROMPT_COMMAND if bash-preexec is detected; it will cause double-writes to preexec_functions
+    # shellcheck disable=SC2154
   if [[ -n "$_PRE_PGEM_PROMPT_COMMAND" ]] && [[ -z "$__bp_imported" ]]; then
     PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
   fi

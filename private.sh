@@ -72,6 +72,7 @@ pg::_eachGem() {
     fi
   done
   # something will probably blow up if we can't cd back, but there's not a lot we can do
+    # shellcheck disable=SC2164
   cd "$oldpwd"
   return "${_PGEM_EACHGEM_EXIT_CODE:-0}"
 }
@@ -146,7 +147,6 @@ pg::_gh_migrate() {
 pg::_srcIfExist() {
   if [[ -f "$1" ]];  then
     pg::log "Including $(pg::_dispPath "$1")"
-    # shellcheck disable=SC1090
     source "$1"
   fi
 }
