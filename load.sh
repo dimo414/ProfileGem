@@ -11,18 +11,15 @@
 # familiar shell everywhere you go.
 #
 
+_PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 [[ -n "$PS1" ]] && _PRE_PGEM_PS1="$PS1"
 [[ -n "$PROMPT_COMMAND" ]] && _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 
 START_DIR=
-PGEM_VERSION=(0 10 0)
+PGEM_VERSION=(0 11 0)
 
-[[ -z "$PGEM_INFO_ON_START" ]] && PGEM_INFO_ON_START=false
-[[ -z "$_PGEM_DEBUG" ]] && _PGEM_DEBUG=false
-[[ -z "$_PGEM_LOAD_EXIT_CODE" ]] && _PGEM_LOAD_EXIT_CODE=0
-
-# :? does not exit from interactive shells, so we return explicitly
+# :? does not exit from interactive shells, so we can't use it here.
 if [[ -z "${BASH_SOURCE[0]}" ]]; then
   echo "Could not determine install directory" >&2
   return 1 2>/dev/null || exit 1
@@ -31,7 +28,7 @@ _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::_re
 
 _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
-pushd "$_PGEM_LOC" > /dev/null
+cd "$_PGEM_LOC" || return 2>/dev/null || exit
 
 source "$PWD/bash-cache.sh"
 source "$PWD/private.sh"
@@ -62,10 +59,10 @@ fi
 
 # Populate the list of enabled gems
 _GEMS=()
-for gem in $(grep '^#GEM' "$_PGEM_LOC/$(pg::_configFile)" | awk '{ print $2 ".gem" }'); do
-  _GEMS+=($gem)
-done
-pg::log "About to load gems: ${_GEMS[@]}"
+while IFS= read -r gem; do
+    _GEMS+=("$gem")
+done < <(grep '^#GEM' "${_PGEM_LOC}/$(pg::_configFile)" | awk '{ print $2 ".gem" }')
+pg::log "About to load gems: ${_GEMS[*]}"
 
 # TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
 pg::_eachGem pg::_loadBase      # initialize environment, executed before config file is parsed
@@ -77,25 +74,22 @@ pg::_eachGem pg::_loadAlias     # create aliases
 pg::_eachGem pg::_loadFuncs     # define functions
 pg::_eachGem pg::_loadScripts   # add scripts to path
 
-if [[ ! -z "$PS1" ]]; then      # interactive shell
+if [[ -n "$PS1" ]]; then        # interactive shell
   pg::_check_out_of_date
-  if $PGEM_INFO_ON_START; then
+  if "${PGEM_INFO_ON_START:=false}"; then
     pgem_info
   fi
   pg::_eachGem pg::_loadCmds    # run interactive commands
 fi
 pg::log # for newline
 
-popd > /dev/null
+# shellcheck disable=SC2164
+[[ -d "$_PRE_PGEM_PWD" ]] && cd "$_PRE_PGEM_PWD"
 
-if [[ -n "$START_DIR" ]]
-then
-  if [[ -d "$START_DIR" ]]
-  then
+if [[ -n "$START_DIR" ]]; then
+  if [[ -d "$START_DIR" ]]; then
     pg::log "Switching from $PWD to $START_DIR"
     pg::log
-    # cd . first so the second cd sets $OLDPWD to a meaningful place
-    cd . || pg::err "Could not cd to $PWD ...?"
     cd "$START_DIR" || pg::err "Could not cd to START_DIR $START_DIR"
   else
     pg::err "Start dir $START_DIR does not exist!"
@@ -105,8 +99,10 @@ fi
 # Enable running a command in ProfileGem's scope
 # Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
-if (($#)); then
+if (( $# )); then
   eval "$@"
 else
-  return $_PGEM_LOAD_EXIT_CODE 2>/dev/null || exit $_PGEM_LOAD_EXIT_CODE
+  _PGEM_LOAD_EXIT_CODE=${_PGEM_EACHGEM_EXIT_CODE:-0}
+  unset _PGEM_EACHGEM_EXIT_CODE
+  return "$_PGEM_LOAD_EXIT_CODE" 2>/dev/null || exit "$_PGEM_LOAD_EXIT_CODE"
 fi

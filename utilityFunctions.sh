@@ -6,13 +6,13 @@
 # Print a message to stderr
 pg::err() { printf '\e[1;31m%s\e[0m\n' "$*" >&2; }
 # Print a message to stderr if debug logging enabled
-pg::log() { if "$_PGEM_DEBUG"; then printf '\e[35m%s\e[0m\n' "$*" >&2; fi; }
+pg::log() { if "${_PGEM_DEBUG:-false}"; then printf '\e[35m%s\e[0m\n' "$*" >&2; fi; }
 # Prints a stack trace to stderr
 # pass "$@" to include the current function's arguments in the trace
 pg::trace() { pg::_trace_impl "$@"; }
 # Prints a stack trace to stderr if debug logging enabled
 # pass "$@" to include the current functions arguments in the trace
-pg::debug_trace() { if "$_PGEM_DEBUG"; then pg::_trace_impl "$@"; fi; }
+pg::debug_trace() { if "${_PGEM_DEBUG:-false}"; then pg::_trace_impl "$@"; fi; }
 
 # Prints a stack trace trimming the first two frames, as this will be called by
 # pg::trace or pg::debug_trace. If run in extdebug mode trace will include
@@ -51,7 +51,7 @@ pg::_trace_args() {
 # rather than each gem doing so individually.
 pg::add_path() {
   if [[ -d "${1:?Must specify a path to add}" ]]; then
-    if echo $PATH | grep -q '^\(.*:\)*'"$1"'\(:.*\)*$'; then
+    if grep -q '^\(.*:\)*'"$1"'\(:.*\)*$' <<<"$PATH"; then
       pg::log "$1 is already on the PATH, not adding..."
       return 2
     fi
@@ -60,8 +60,8 @@ pg::add_path() {
     if [[ "${absPath:0:1}" != "/" ]]; then
       absPath=$(pg::_realpath "$1")
   fi
-    pg::log "Adding $absPath to the PATH"
-    export PATH="$absPath:$PATH"
+    pg::log "Adding ${absPath} to the PATH"
+    export PATH="${absPath}:${PATH}"
   else
     pg::err "$1 is not a directory, cannot add to PATH."
     return 1

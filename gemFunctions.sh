@@ -8,37 +8,43 @@
 # possible reloading will not be sufficient and it will be necessary to
 # relaunch the shell.
 pgem_reload() {
-  local ret=0 # set before populating pgem_pre.env
-  $_PGEM_DEBUG && set | sort > /tmp/pgem_pre.env
+  local state_dir ret=0 # set before populating pgem_pre.env
+  if "${_PGEM_DEBUG:-false}"; then
+    state_dir=$(mktemp -d) || return
+    set > "${state_dir}/pgem_pre.env"
+  fi
+
   export PATH="$_PRE_PGEM_PATH"
   [[ -n "$_PRE_PGEM_PS1" ]] && PS1="$_PRE_PGEM_PS1"
-  [[ -n "$_PRE_PGEM_PROMPT_COMMAND" ]] &&
+  # Don't reset PROMPT_COMMAND if bash-preexec is detected; it will cause double-writes to preexec_functions
+  if [[ -n "$_PRE_PGEM_PROMPT_COMMAND" ]] && [[ -z "$__bp_imported" ]]; then
     PROMPT_COMMAND="$_PRE_PGEM_PROMPT_COMMAND"
+  fi
 
   source "${_PGEM_LOC}/load.sh"
   ret=$?
 
-  if $_PGEM_DEBUG
-  then
-    set | sort > /tmp/pgem_post.env
-    echo Environment Changes:
-    comm -3 /tmp/pgem_pre.env /tmp/pgem_post.env |
+  if "${_PGEM_DEBUG:-false}"; then
+    set > "${state_dir}/pgem_post.env"
+    echo "Environment Changes:"
+    # '/^[^=]*$/q;p' prints until hitting a line without an equals sign, i.e. a function declaration
+    # Use comm instead of diff to avoid headers and line numbers
+    comm -3 <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_pre.env") <(sed -n '/^[^=]*$/q;p' "${state_dir}/pgem_post.env") |
       sed -e 's|^[^\t]|- \0|' -e 's|^\t|+ |'
   fi
-  unset _PGEM_LOAD_EXIT_CODE
-  return $ret
+  return "$ret"
 }
 
 # Pulls in updates to ProfileGem and all gems, then reloads them.
 pgem_update() {
-  _PGEM_LOAD_EXIT_CODE=0
-  # Must avoid subshells so _PGEM_LOAD_EXIT_CODE is properly set
-  pushd "$_PGEM_LOC" > /dev/null
-  pg::_eachGem pg::_updateRepo
-  pg::_updateRepo || _PGEM_LOAD_EXIT_CODE=$? # update ProfileGem
-  touch "$_PGEM_LAST_UPDATE_MARKER"
+  (
+    cd "$_PGEM_LOC" || return
+    pg::_eachGem pg::_updateRepo
+    pg::_updateRepo || _PGEM_EACHGEM_EXIT_CODE=$? # update ProfileGem
+    touch "$_PGEM_LAST_UPDATE_MARKER"
+    exit "$_PGEM_EACHGEM_EXIT_CODE" # exit subshell
+  ) || _PGEM_EACHGEM_EXIT_CODE=$?
   unset -f pgem_snooze_update
-  popd > /dev/null
   pgem_reload
 }
 
@@ -50,35 +56,36 @@ pgem_migrate() {
   cp -R "$_PGEM_LOC" "$backup"
   echo "Migrating repos off BitBucket and onto GitHub"
   echo "Existing ProfileGem install at ${PWD} copied to ${backup} in case of issues"
-  pushd "$_PGEM_LOC" > /dev/null
-  pg::_eachGem pg::_gh_migrate
-  pg::_gh_migrate
-  popd > /dev/null
+  (
+    cd "$_PGEM_LOC" || return
+    pg::_eachGem pg::_gh_migrate
+    pg::_gh_migrate
+  ) || return
   pgem_reload
 }
 
 # Prints a high-level summary of all installed gems.
 pgem_info() {
-  if (($#)); then
+  if (( $# )); then
     local gem="${1%.gem}.gem" # supports "foo" or "foo.gem"
-    if [[ -d "$_PGEM_LOC/$gem" ]]; then
-      pushd "$_PGEM_LOC/$gem" > /dev/null
-      pg::_incomingRepo
-      pg::_printDoc
-      popd > /dev/null
+    if [[ -d "${_PGEM_LOC}/${gem}" ]]; then
+      (
+        cd "${_PGEM_LOC}/${gem}" || return
+        pg::_incomingRepo
+        pg::_printDoc
+      )
     else
       pg::err "No such gem $gem"
       return 1
     fi
   else
-    pushd "$_PGEM_LOC" > /dev/null
-    echo "ProfileGem v${PGEM_VERSION[0]}.${PGEM_VERSION[1]}.${PGEM_VERSION[2]}"
-    echo
-    pg::_incomingRepo
-    pg::_eachGem pg::_printDocLead
-    echo
-    echo "Run pgem_help for ProfileGem usage, or pgem_info GEM_NAME for gem details."
-    popd > /dev/null
+    (
+      cd "$_PGEM_LOC" || return
+      printf 'ProfileGem v%s.%s.%s\n\n' "${PGEM_VERSION[@]}"
+      pg::_incomingRepo
+      pg::_eachGem pg::_printDocLead
+      printf '\nRun pgem_help for ProfileGem usage, or pgem_info GEM_NAME for gem details.\n'
+    )
   fi
 }
 
