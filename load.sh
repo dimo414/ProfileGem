@@ -11,23 +11,31 @@
 # familiar shell everywhere you go.
 #
 
+# Shell and environmnet validation
+# :? does not exit from interactive shells, so we can't use it here.
+if [[ -z "$BASH_VERSION" ]]; then
+  echo "Invalid shell detected, must run as bash" >&2
+  return 1 2>/dev/null || exit 1
+elif [[ -n "$POSIXLY_CORRECT" ]]; then
+  echo "ProfileGem is not POSIX-compatible, must run as bash" >&2
+  return 1 2>/dev/null || exit 1
+elif ! [[ -e "${BASH_SOURCE[0]}" ]]; then
+  echo "Could not determine install directory" >&2
+  return 1 2>/dev/null || exit 1
+fi
+
+_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::realpath yet
+PGEM_VERSION=(0 11 0)
+_PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
+
 _PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 [[ -n "$PS1" ]] && _PRE_PGEM_PS1="$PS1"
 [[ -n "$PROMPT_COMMAND" ]] && _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
 
 START_DIR=
-PGEM_VERSION=(0 11 0)
 
-# :? does not exit from interactive shells, so we can't use it here.
-if [[ -z "${BASH_SOURCE[0]}" ]]; then
-  echo "Could not determine install directory" >&2
-  return 1 2>/dev/null || exit 1
-fi
-_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::realpath yet
-
-_PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
-
+# TODO do we actually need this cd at all?
 cd "$_PGEM_LOC" || return 2>/dev/null || exit
 
 source "$PWD/bash-cache.sh"
@@ -100,7 +108,8 @@ fi
 # Useful when we aren't in an interactive shell, such as cron
 # Note aliases are not accessible if it's not an interactive shell
 if (( $# )); then
-  eval "$@"
+  # It'd be cleaner to use "${*@Q}", introduced in Bash 4.4
+  eval "$(printf '%q ' "$@")"
 else
   _PGEM_LOAD_EXIT_CODE=${_PGEM_EACHGEM_EXIT_CODE:-0}
   unset _PGEM_EACHGEM_EXIT_CODE
