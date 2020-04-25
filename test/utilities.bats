@@ -2,8 +2,8 @@
 #
 # Unit tests for util.gem
 
-touch "$BATS_TEST_DIRNAME/../local.conf.sh" # ensure local.conf.sh exists
-source "$BATS_TEST_DIRNAME/../load.sh"
+source "$BATS_TEST_DIRNAME/../bash-cache.sh"
+source "$BATS_TEST_DIRNAME/../utilityFunctions.sh"
 
 # TODO use bats-assert or another library
 # see https://github.com/ztombol/bats-docs/issues/15
@@ -74,7 +74,47 @@ expect_match() {
   expect_eq    "${lines[8]}" "  run layer1 zero"
 }
 
-@test "add path" {
+@test "realpath, absolute_path, relative_path" {
+  tmp_dir=$(cd "$(mktemp -d)" && pwd -P) # /tmp is a symlink on OSX
+  mkdir -p "${tmp_dir}/aa/bb/cc" "${tmp_dir}/aa/dd/ee" "${tmp_dir}/ff/gg"
+  ln -s "${tmp_dir}/aa/bb/cc" "${tmp_dir}/hh"
+  cd "${tmp_dir}/aa/bb"
+
+  run pg::realpath .
+  expect_eq "$output" "${tmp_dir}/aa/bb"
+  run pg::absolute_path .
+  expect_eq "$output" "${tmp_dir}/aa/bb/."
+  run pg::relative_path .
+  expect_eq "$output" "."
+
+  run pg::realpath cc
+  expect_eq "$output" "${tmp_dir}/aa/bb/cc"
+  run pg::absolute_path cc
+  expect_eq "$output" "${tmp_dir}/aa/bb/cc"
+  run pg::relative_path cc
+  expect_eq "$output" "cc"
+
+  run pg::realpath ../dd
+  expect_eq "$output" "${tmp_dir}/aa/dd"
+  run pg::absolute_path ../dd
+  expect_eq "$output" "${tmp_dir}/aa/bb/../dd"
+  run pg::relative_path ../dd
+  expect_eq "$output" "../dd"
+
+  run pg::realpath ../../hh
+  expect_eq "$output" "${tmp_dir}/aa/bb/cc"
+  run pg::absolute_path ../../hh
+  expect_eq "$output" "${tmp_dir}/aa/bb/../../hh"
+  run pg::relative_path ../../hh
+  expect_eq "$output" "../../hh"
+
+  run pg::relative_path "${tmp_dir}/hh" "${tmp_dir}/ff/gg"
+  expect_eq "$output" "../../hh"
+  run pg::relative_path "${tmp_dir}/ff/gg" "${tmp_dir}"
+  expect_eq "$output" "ff/gg"
+}
+
+@test "add_path" {
   tmp_dir=$(cd "$(mktemp -d)" && pwd -P) # /tmp is a symlink on OSX
   mkdir "${tmp_dir}/bin"
   install /dev/null "${tmp_dir}/bin/cmd" # https://unix.stackexchange.com/a/47182/19157

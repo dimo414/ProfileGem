@@ -47,6 +47,46 @@ pg::_trace_args() {
   fi
 }
 
+# Given a relative path, resolves symlinks and prints an absolute path.
+# Many systems provide a realpath command or support readlink -f, but not all.
+if command -v realpath &> /dev/null; then
+  pg::realpath() { realpath "$1"; }
+elif readlink -f / &> /dev/null; then
+  pg::realpath() { readlink -f "$1"; }
+else
+  # readlink -f doesn't exist on OSX, need to implement manually
+  pg::realpath() {
+    if [[ -d "${1:?}" ]]; then
+      (cd "$1" && pwd -P)
+    else
+      echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
+    fi
+  }
+fi
+# Legacy name, safe to delete
+pg::_realpath() { pg::log 'pg::_realpath has been renamed pg::realpath'; pg::realpath "$@"; }
+
+# Returns an absolute path, but not necesarilly a canonical path (e.g. may
+# contain /.. or /. segments, or symlinks). Should be faster than pg::realpath
+# as it doesn't need to touch the file system.
+pg::absolute_path() {
+  if [[ "${1:?}" == /* ]]; then
+    echo "$1"
+  else
+    printf '%s/%s\n' "$PWD" "$1"
+  fi
+}
+
+# Restructures a path to be relative to the given location, PWD if unspecified
+# See (way too many) approaches in https://stackoverflow.com/q/2564634/113632
+# The most reasonable approach seems to be delegating to python:
+# https://stackoverflow.com/a/31236568/113632
+# Note that realpath --relative-to requires paths exist, which we don't need.
+pg::relative_path() {
+  python -c 'import os,sys; print(os.path.relpath(*(sys.argv[1:])))' \
+    "${1:?}" "${2:-$PWD}"
+}
+
 # Adds a directory to the front of PATH, allowing ProfileGem to manage PATH
 # rather than each gem doing so individually.
 pg::add_path() {
@@ -57,8 +97,8 @@ pg::add_path() {
     fi
     local absPath=$1
     # don't resolve symlinks unless the user provides a relative path
-    if [[ "${absPath:0:1}" != "/" ]]; then
-      absPath=$(pg::_realpath "$1")
+    if [[ "$absPath" != /* ]]; then
+      absPath=$(pg::realpath "$1")
   fi
     pg::log "Adding ${absPath} to the PATH"
     export PATH="${absPath}:${PATH}"

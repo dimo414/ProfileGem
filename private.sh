@@ -3,28 +3,6 @@
 # Used internally to prepare the profile, not meant to be called by the user
 #
 
-# Given a relative path, prints an absolute path
-if command -v realpath &> /dev/null; then
-  pg::_realpath() { realpath "$1"; }
-elif readlink -f / &> /dev/null; then
-  pg::_realpath() { readlink -f "$1"; }
-else
-  # readlink -f doesn't exist on OSX, need to implement manually
-  pg::_realpath() {
-    if [[ -d "${1:?}" ]]; then
-      (cd "$1" && pwd -P)
-    else
-      echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
-    fi
-  }
-fi
-
-# Expects a path argument and outputs the full path, with the path to ProfileGem stripped off
-# e.g. dispPath /home/username/ProfileGem/my.gem => my.gem
-pg::_dispPath() {
-  pg::_realpath "$@" | sed 's|^'"$_PGEM_LOC/"'||'
-}
-
 # Print a warning if ProfileGem hasn't been updated recently
 pg::_check_out_of_date() {
   [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]] || { touch "$_PGEM_LAST_UPDATE_MARKER" && return; }
@@ -145,8 +123,8 @@ pg::_gh_migrate() {
 
 # Sources a file if it exists, skips if not
 pg::_srcIfExist() {
-  if [[ -f "$1" ]];  then
-    pg::log "Including $(pg::_dispPath "$1")"
+  if [[ -f "${1:?}" ]];  then
+    pg::log "Including $(pg::relative_path "$1" "$_PGEM_LOC")"
     source "$1"
   fi
 }

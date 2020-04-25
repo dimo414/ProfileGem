@@ -24,7 +24,7 @@ if [[ -z "${BASH_SOURCE[0]}" ]]; then
   echo "Could not determine install directory" >&2
   return 1 2>/dev/null || exit 1
 fi
-_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::_realpath yet
+_PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::realpath yet
 
 _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
@@ -50,7 +50,7 @@ if "${PGEM_DECORATE_SOURCE:-true}" && [[ "$(type -t source)" == "builtin" ]]; th
     # if file looks like a path, make it absolute. Since source first searches the PATH it's not
     # safe to just check [[ -e "$file" ]] because it might be shadowing something on the PATH.
     if [[ "$file" == */* ]]; then
-      file=$(pg::_realpath "$file")
+      file=$(pg::realpath "$file")
     fi
     command source "$file" "$@"
   }
