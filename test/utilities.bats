@@ -2,6 +2,7 @@
 #
 # Unit tests for util.gem
 
+touch "$BATS_TEST_DIRNAME/../local.conf.sh" # ensure local.conf.sh exists
 source "$BATS_TEST_DIRNAME/../load.sh"
 
 # TODO use bats-assert or another library
