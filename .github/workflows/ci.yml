@@ -12,9 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    # TODO add unit tests
-    #- name: "Unit Tests - ${{ matrix.bash-version }}"
-    #  run: bats test
+    - name: "Unit Tests - ${{ matrix.bash-version }}"
+      run: ${{ matrix.bash-version }} -c 'bats test'
     - name: "ProfileGem Tests - ${{ matrix.bash-version }}"
       run: ${{ matrix.bash-version }} /pgem_test/pgem_test.sh
 

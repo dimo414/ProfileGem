@@ -82,7 +82,7 @@ pg::add_path() {
 #
 # Suggested usage (where func was originally defined elsewhere):
 #
-#   pg::decorated func &&
+#   pg::decorate func &&
 #   func() {
 #     ...
 #     pg::decorated::func ...
@@ -136,13 +136,13 @@ pg::require() {
 
   eval "$(cat <<EOF
     $cmd() {
-      if which $cmd &> /dev/null; then
-        unset -f $cmd
-        $cmd "\$@"
+      if which "$cmd" &> /dev/null; then
+        unset -f "$cmd"
+        "$cmd" "\$@"
         return
       fi
 
-      printf '%s not available\n%s\n' $cmd $(printf %q "$msg") >&2
+      printf '%s not available\n%s\n' "$cmd" "$(printf %q "$msg")" >&2
       return 127
     }
 EOF
