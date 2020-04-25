@@ -25,6 +25,7 @@ expect_match() {
 
 
 @test "logging" {
+  _PGEM_DEBUG=false # set by default in ci-profilegem
   run pg::err hello world
   expect_eq "${output//$'\e'/\\e}" "\e[1;31mhello world\e[0m"
   run pg::log hello world
