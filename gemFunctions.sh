@@ -58,7 +58,7 @@ pgem_migrate() {
   backup=$(mktemp -d) || return
   cp -R "$_PGEM_LOC" "$backup"
   echo "Migrating repos off BitBucket and onto GitHub"
-  echo "Existing ProfileGem install at ${PWD} copied to ${backup} in case of issues"
+  echo "Existing ProfileGem install at ${_PGEM_LOC} copied to ${backup} in case of issues"
   (
     cd "$_PGEM_LOC" || return
     pg::_eachGem pg::_gh_migrate
