@@ -83,6 +83,7 @@ pg::absolute_path() {
 # https://stackoverflow.com/a/31236568/113632
 # Note that realpath --relative-to requires paths exist, which we don't need.
 pg::relative_path() {
+  # shellcheck disable=SC2155
   local python_cmd=$(command -v python3 python2 python) # ignore failure
   python_cmd=${python_cmd%%$'\n'*}
   "${python_cmd:?python binary not found}" \
