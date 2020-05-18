@@ -27,15 +27,15 @@ expect_match() {
 @test "logging" {
   _PGEM_DEBUG=false # set by default in ci-profilegem
   run pg::err hello world
-  expect_eq "${output//$'\e'/\\e}" "\e[1;31mhello world\e[0m"
+  expect_eq "$output" $'\e[1;31mhello world\e[0m'
   run pg::log hello world
-  expect_eq "${output//$'\e'/\\e}" ""
+  expect_eq "$output" $''
 
   _PGEM_DEBUG=true
   run pg::err hello world
-  expect_eq "${output//$'\e'/\\e}" "\e[1;31mhello world\e[0m"
+  expect_eq "$output" $'\e[1;31mhello world\e[0m'
   run pg::log hello world
-  expect_eq "${output//$'\e'/\\e}" "\e[35mhello world\e[0m"
+  expect_eq "$output" $'\e[35mhello world\e[0m'
 }
 
 @test "stack trace" {
