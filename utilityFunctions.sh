@@ -176,11 +176,11 @@ pg::require() {
   # This early check might increase startup time, especially if a gem calls
   # pg::require many times. It might be better to remove it so the function
   # is always eval'ed - it will transparently remove itself upon being called.
-  which "$cmd" &> /dev/null && return # already installed
+  type -P "$cmd" >/dev/null && return # already installed
 
   eval "$(cat <<EOF
     $cmd() {
-      if which "$cmd" &> /dev/null; then
+      if type -P "$cmd" &> /dev/null; then
         unset -f "$cmd"
         "$cmd" "\$@"
         return

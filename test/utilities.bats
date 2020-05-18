@@ -136,18 +136,18 @@ expect_match() {
     # add path
     pg::add_path "${tmp_dir}/bin"
     expect_match "$PATH" "${tmp_dir}/bin.*"
-    run which cmd
+    run type -P cmd
     expect_eq "$output" "${tmp_dir}/bin/cmd"
     new_PATH=$PATH
     # re-add is a no-op
-    ! pg::add_path "${tmp_dir}/bin"
+    pg::add_path "${tmp_dir}/bin" || (( $? == 2 ))
     expect_eq "$PATH" "$new_PATH" # unchanged on duplicate adds
 
     # add relative path
     cd "${tmp_dir}/bin/sub"
     pg::add_path .
     expect_match "$PATH" "${tmp_dir}/bin/sub.*"
-    run which cmd
+    run type -P cmd
     expect_eq "$output" "${tmp_dir}/bin/sub/cmd"
   )
 }
@@ -185,10 +185,10 @@ expect_match() {
   ! command -v cmd # no cmd available yet
   pg::require cmd msg
   expect_eq "$(type -t cmd)" "function"
-  ! which cmd
+  ! type -P cmd
 
   export PATH="${tmp_dir}:${PATH}"
-  which cmd
+  type -P cmd
   expect_eq "$(type -t cmd)" "function"
 
   run cmd
