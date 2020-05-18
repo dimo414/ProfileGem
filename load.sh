@@ -39,6 +39,7 @@ START_DIR=
 cd "$_PGEM_LOC" || return 2>/dev/null || exit
 
 source "$PWD/bash-cache.sh"
+source "$PWD/getopts.sh"
 source "$PWD/private.sh"
 source "$PWD/gemFunctions.sh"
 source "$PWD/utilityFunctions.sh"
