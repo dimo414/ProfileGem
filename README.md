@@ -27,39 +27,37 @@ loaded by ProfileGem to customize your environment just the way you want it.
 
 ## Getting Started
 
-1. Checkout ProfileGem to your machine (`~/ProfileGem` is suggested).
+1. Clone ProfileGem to your machine (`~/ProfileGem` is suggested).
 
-1. Drop any gems you'd like to use into the ProfileGem directory. A future update may allow for
-   automatic checkouts, but presently you must create/checkout gems manually. Once in place,
-   ProfileGem can update them all together for you.
-1. To create a new gem, copy the `template` directory to a new `*.gem` directory:
+1. Drop any gems you'd like to use into the `ProfileGem` directory. A
+   [future update](https://github.com/dimo414/ProfileGem/issues/11) may help automate this, but
+   presently you must create/checkout gems manually. Once configured ProfileGem can update
+   everything together for you.
+    * To create a new gem, copy the `template` directory to a new `*.gem` directory:
 
-        cp -R template myshell.gem
-
-1. Copy `template.conf.sh` to `local.conf.sh` and edit it, adding `#GEM` lines (e.g. `#GEM myshell`
-   for a `myshell.gem` directory) for each gem you've installed. This lets you control the order in
-   which gems are loaded. You can also specify any local environment variables here to further
-   configure your gems' behavior.
+        ```
+        cp -R template mycool.gem
+       ```
 
 1. Run `~/ProfileGem/load.sh` and confirm no errors / unexpected output. You can also run it in
    debug mode with `_PGEM_DEBUG=true ~/ProfileGem/load.sh` to get more detailed output.
+    * This creates a `local.conf.sh` file which determines the order gems are loaded; you can
+      reorder the `#GEM` lines if needed. Gems can also be configured here, see each gem's
+      `base.conf.sh` file for available configuration hooks.
 
-1. Add a call to `load.sh` in your `.bashrc`/`.bash_profile` file:
+1. To install, `source` `load.sh` in your `~/.bashrc`:
 
         source ~/ProfileGem/load.sh
 
    And you're good to go! When you open a new terminal window ProfileGem will run, executing
    all your installed gems. You can also run the above command in a running terminal to load
-   ProfileGem manually; this is really helpful for loading "your" terminal temporarily on
-   another machine.
+   ProfileGem manually.
 
 ## Using ProfileGem
 
 Once configured, there should be little you need to do with ProfileGem directly, however
 there are some features worth knowing about:
 
-* `_PGEM_DEBUG=true`: Set this, either in `~/.bashrc` or inline (e.g.
-  `_PGEM_DEBUG=true ~/ProfileGem/load.sh`) to output debug messages when ProfileGem is loading.
 * `pgem_reload`: If you make a change to any of your gems or your config file, you can reload it by
   running `pgem_reload`.
 * `pgem_update`: Updates ProfileGem and all checked out gems from their parent repositories and
@@ -67,22 +65,19 @@ there are some features worth knowing about:
 * `pgem_info`: List installed gems. Run `pgem_info GEM_NAME` to display more detailed information
   about that gem, if available.
 * `pgem_help`: Outputs ProfileGem's usage information.
+* `_PGEM_DEBUG=true`: Set this, either in `~/.bashrc` or inline (e.g.
+  `_PGEM_DEBUG=true ~/ProfileGem/load.sh`) to output debug messages when ProfileGem is loading.
 
 
 ### Customizing With `local.conf.sh`
 
 In addition to specifying the gems to load (and their order), many gems can be further customized
 by settings in `local.conf.sh`. Each gem defines a `base.conf.sh` file which contains defaults
-that you can override in `local.conf.sh`. For instance, you might have a gem that customizes your
-prompt but allows the user to specify the hostname's color. Rather than needing to manually update
-the `PS1` on each machine, you just update a variable in your `local.conf.sh`, so it might look
-like this:
+that can be overridden or updated in `local.conf.sh`. For example, `prompt.gem` lets you customize
+the color of the hostname in the prompt:
 
-    #GEM myshell
+    #GEM prompt
     HOST_COLOR=RED
-
-The `myshell.gem` will configure the `$PS1` but use the overridden `$HOST_COLOR`. Now each machine
-you use can have a custom prompt with no fuss.
 
 ## Public Gems
 

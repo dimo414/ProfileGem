@@ -16,14 +16,25 @@ pg::_check_out_of_date() {
   fi
 }
 
-# Checks that the config file exists, and returns its name
+# Creates the config file if it doesn't exist, and returns its name.
+# The auto-generated gem ordering may not be ideal, but this at least gets things set up.
 pg::_configFile() {
   local conf_file='local.conf.sh'
-  echo "$conf_file"
   if ! [[ -f "$conf_file" ]]; then
-    pg::err "No ${conf_file} file found."
-    return 1
+    # if it doesn't exist, create it
+    local gems=(*.gem)
+    {
+      printf '# %s\n' \
+        'ProfileGem configuration' '' \
+        '"#GEM ..." directives configure which .gems will be loaded, and in what order.' \
+        'You may need to re-order these directives to allow dependent gems to interact.' '' \
+        'Many gems support customizations which can be configured here as well.' \
+        "See each gem's documentation or base.conf.sh for details."
+      echo
+      printf '#GEM %s\n' "${gems[@]%.gem}"
+    } > "$conf_file"
   fi
+  echo "$conf_file"
 }
 
 # Run "$@" in each gem - should generally be a function
