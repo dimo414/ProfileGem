@@ -80,7 +80,7 @@ pg::_incomingRepo() {
   if (( incoming > 0 )); then
     echo "$dir is $incoming change(s) behind."
   fi
-} && bc::cache pg::_incomingRepo PWD
+} && bc::cache pg::_incomingRepo 5m 10s PWD
 
 # Pulls in updates for the current directory, currently aware of Mercurial and Git
 # Alternatively create an update.sh script in the current directory to specify
