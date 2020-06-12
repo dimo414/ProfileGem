@@ -186,7 +186,7 @@ pg::require() {
         return
       fi
 
-      printf '%s not available\n%s\n' "$cmd" "$(printf %q "$msg")" >&2
+      printf '%s not available\n%s\n' "$cmd" $(printf %q "$msg") >&2
       return 127
     }
 EOF
