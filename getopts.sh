@@ -65,9 +65,9 @@ pg::getopts() {
 # which pg::getopts sets up. Do not call directly.
 pg::_getopts_helper() {
   local OPTARG opt failed=0
-  local optstring=${1:optstring}; shift # can be empty string
-  local min_args=${1:?min_args}; shift
-  local max_args=${1?max_args}; shift # can be empty string
+  # $1 and $3 can be empty strings, so ? instead of :?
+  local optstring=${1?optstring} min_args=${2:?min_args} max_args=${3?max_args}
+  shift 3
   # ensure optstring _is_ prefixed with :
   while getopts ":${optstring#:}" opt; do
     case "${opt}" in
