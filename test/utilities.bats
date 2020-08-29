@@ -10,7 +10,7 @@ source "$BATS_TEST_DIRNAME/../utilityFunctions.sh"
 expect_eq() {
   (( $# == 2 )) || { echo "Invalid inputs $*"; return 127; }
   if [[ "$1" != "$2" ]]; then
-    printf "Actual:   '%s'\nExpected: '%s'\n" "$1" "$2"
+    printf "Actual:   '%s'\nExpected: '%s'\n" "${1//$'\e'/\\e}" "${2//$'\e'/\\e}"
     return 1
   fi
 }
@@ -18,11 +18,67 @@ expect_eq() {
 expect_match() {
   (( $# == 2 )) || { echo "Invalid inputs $*"; return 127; }
   if ! [[ "$1" =~ ^$2$ ]]; then
-    printf "Actual:   '%s'\nPattern: '^%s$'\n" "$1" "$2"
+    printf "Actual:   '%s'\nPattern: '^%s$'\n" "${1//$'\e'/\\e}" "${2//$'\e'/\\e}"
     return 1
   fi
 }
 
+@test "pg::style" {
+  run pg::style RED
+  (( status == 0 ))
+  expect_eq "$output" '' # writes to a variable, not to stdout/err
+
+  run pg::style ORANGE
+  (( status != 0 ))
+  expect_match "$output" ".*'ORANGE'.*" # ORANGE isn't a valid spec
+
+  run pg::style RED::GREEN # Empty string (::) isn't a valid spec
+  (( status != 0 ))
+  expect_match "$output" ".*''.*"
+
+  pg::style YELLOW different_var
+  expect_eq "$different_var" $'\e[33m'
+}
+
+@test "pg::style named colors" {
+  pg::style RED
+  expect_eq "$_pg_style" $'\e[31m'
+
+  pg::style GREEN:PURPLE_BG
+  expect_eq "$_pg_style" $'\e[32;45m'
+}
+
+@test "pg::style numbered colors" {
+  pg::style 201
+  expect_eq "$_pg_style" $'\e[38;5;201m'
+
+  pg::style '255;165;0_BG'
+  expect_eq "$_pg_style" $'\e[48;2;255;165;0m'
+}
+
+@test "pg::style formatting" {
+  pg::style BOLD
+  expect_eq "$_pg_style" $'\e[1m'
+
+  pg::style DIM_OFF
+  expect_eq "$_pg_style" $'\e[22m'
+
+  pg::style 'UNDERLINE:YELLOW:LCYAN:BLINK'
+  expect_eq "$_pg_style" $'\e[4;33;96;5m'
+}
+
+@test "pg::style prompt" {
+  pg::style -p YELLOW:BLUE_BG
+  expect_eq "$_pg_style" $'\\[\e[33;44m\\]'
+}
+
+@test "pg::print" {
+  run pg::print RED Hello GREEN World
+  expect_eq "$output" $'\e[31mHello\e[32mWorld\e[0m'
+
+  run pg::print -p YELLOW 'Foo ' PURPLE_BG Bar
+  expect_eq "$output" $'\\[\e[33m\\]Foo \\[\e[45m\\]Bar\\[\e[0m\\]'
+}
 
 @test "logging" {
   _PGEM_DEBUG=false # set by default in ci-profilegem

@@ -3,6 +3,92 @@
 # A collection of helper functions that are intended to be used by Gems
 #
 
+# Helper for creating colored and formatted output. Most users can use pg::print which provides a
+# simpler API.
+#
+# Takes a :-delimited sequence of formatting specifications, like RED (color text red), BLUE_BG
+# (color background blue), and STRIKE (text struck-through) and constructs an ANSI SGR escape
+# sequence (see https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters) implementing the
+# given spec. The resulting spec is written to a variable (by default $_pg_style) for use in
+# formatted output. Functions should declare this variable 'local' before invoking pg::style in
+# order to prevent it leaking outside the calling function. To use a different variable pass its
+# name as the second argument to this function.
+#
+# Codes are usually specified by upper-case English keywords like STRIKE_OFF or LBLUE_BG; see the
+# implementation below for the canonical mapping. However 8-bit and 24-bit colors are specified
+# directly, such as 201 or 255;165;0. Append _BG to an 8- or 24-bit color spec to use it as a
+# background color, e.g. 201_BG.
+#
+# If -p is passed as the first argument the escape sequence will be wrapped in \[...\] to indicate
+# to the prompt that the sequence is non-printing. See
+# https://www.gnu.org/software/bash/manual/html_node/Controlling-the-Prompt.html
+pg::style() {
+  local printf_template='\e[%sm'
+  if [[ "$1" == -p ]]; then printf_template="\[${printf_template}\]"; shift; fi
+  local spec="${1:?Must provide a color spec}:" style_var="${2:-_pg_style}" part code codes=()
+
+  while [[ -n "$spec" ]]; do
+    part="${spec%%:*}"; spec="${spec#*:}"
+    case "$part" in
+      NONE|OFF)         code=0              ;;
+      BOLD)             code=1              ;;  DBL_UNDER)              code=21                 ;;
+      DIM)              code=2              ;;  BOLD_OFF|DIM_OFF)       code=22                 ;;
+      ITALIC)           code=3              ;;  ITALIC_OFF)             code=23                 ;;
+      UNDERLINE)        code=4              ;;  UNDERLINE_OFF)          code=24                 ;;
+      BLINK)            code=5              ;;  BLINK_OFF)              code=25                 ;;
+      REVERSE)          code=7              ;;  REVERSE_OFF)            code=27                 ;;
+      HIDE|HIDDEN)      code=8              ;;  HIDE_OFF|HIDDEN_OFF)    code=28                 ;;
+      STRIKE)           code=9              ;;  STRIKE_OFF)             code=29                 ;;
+      BLACK)            code=30             ;;  BLACK_BG)               code=40                 ;;
+      RED)              code=31             ;;  RED_BG)                 code=41                 ;;
+      GREEN)            code=32             ;;  GREEN_BG)               code=42                 ;;
+      YELLOW)           code=33             ;;  YELLOW_BG)              code=43                 ;;
+      BLUE)             code=34             ;;  BLUE_BG)                code=44                 ;;
+      MAGENTA|PURPLE)   code=35             ;;  MAGENTA_BG|PURPLE_BG)   code=45                 ;;
+      CYAN)             code=36             ;;  CYAN_BG)                code=46                 ;;
+      GREY)             code=37             ;;  GREY_BG)                code=47                 ;;
+      *\;*[0-9])        code="38;2;${part}" ;;  *\;*[0-9]_BG)           code="48;2;${part%_BG}" ;;
+      *[0-9])           code="38;5;${part}" ;;  *[0-9]_BG)              code="48;5;${part%_BG}" ;;
+      DEFAULT)          code=39             ;;  DEFAULT_BG)             code=49                 ;;
+      LBLACK|DGREY)     code=90             ;;  LBLACK_BG|DGREY_BG)     code=100                ;;
+      LRED)             code=91             ;;  LRED_BG)                code=101                ;;
+      LGREEN)           code=92             ;;  LGREEN_BG)              code=102                ;;
+      LYELLOW)          code=93             ;;  LYELLOW_BG)             code=103                ;;
+      LBLUE)            code=94             ;;  LBLUE_BG)               code=104                ;;
+      LMAGENTA|LPURPLE) code=95             ;;  LMAGENTA_BG|LPURPLE_BG) code=105                ;;
+      LCYAN)            code=96             ;;  LCYAN_BG)               code=106                ;;
+      LGREY|WHITE)      code=97             ;;  LGREY_BG|WHITE_BG)      code=107                ;;
+      *) echo "Invalid style spec: '${part}'" >&2; return 1 ;;
+    esac
+    codes+=("$code")
+  done
+  local IFS=';'
+  # shellcheck disable=SC2059
+  printf -v "$style_var" "$printf_template" "${codes[*]}"
+}
+
+# Enables printing colored and formatted output to the terminal. Arguments are processed in pairs;
+# odd-indexed arguments should be pg::style formatting specs, such as RED or BOLD:UNDERLINE, and
+# even-indexed arguments will be printed following the resulting ANSI escape sequence.
+#
+# NOTE: unlike echo, arguments are not joined by spaces. If you wish to include whitespace between
+# text arguments include it in the text. For example: `pg::print RED 'Hello ' GREEN World`
+pg::print() {
+  local prompt _pg_style
+  if [[ "$1" == '-p' ]]; then prompt="$1"; shift; fi
+  if (( $# == 0 || $# % 2 != 0 )); then
+    echo "Invalid arguments to pg::print; should be an even number of arguments." >&2
+    return 1
+  fi
+  while (( $# )); do
+    pg::style ${prompt:+"$prompt"} "$1"
+    printf '%s%s' "$_pg_style" "$2"
+    shift 2
+  done
+  pg::style ${prompt:+"$prompt"} OFF
+  printf '%s\n' "$_pg_style"
+}
+
 # Print a message to stderr
 pg::err() { printf '\e[1;31m%s\e[0m\n' "$*" >&2; }
 # Print a message to stderr if debug logging enabled
@@ -25,7 +111,8 @@ pg::_trace_impl() {
   local skip_frames=2
   local cmd="${FUNCNAME[$skip_frames]}"
   (( $# )) && cmd="${cmd}$(printf " %q" "$@")"
-  pg::err 'Stack trace while executing command: `'"$cmd"$'`\n  \t'"at ${BASH_SOURCE[2]}:${BASH_LINENO[1]/#0/??}"
+  pg::err 'Stack trace while executing command:' \
+    '`'"$cmd"$'`\n  \t'"at ${BASH_SOURCE[2]}:${BASH_LINENO[1]/#0/??}"
   local i args
   for (( i=skip_frames; i<${#FUNCNAME[@]}; i++ )); do
     args=$(pg::_trace_args "$i")

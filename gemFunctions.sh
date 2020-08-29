@@ -68,6 +68,7 @@ pgem_migrate() {
 }
 
 # Prints a high-level summary of all installed gems.
+# shellcheck disable=SC2120
 pgem_info() {
   if (( $# )); then
     local gem="${1%.gem}.gem" # supports "foo" or "foo.gem"
