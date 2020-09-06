@@ -12,8 +12,8 @@
 # the same time, and ideally will wander apart over time.
 pg::_check_out_of_date() {
   # Seed RANDOM with a value that is typically stable in a given installation.
-  local cksum bytes
-  read -r cksum bytes < <(cksum <<<"$USER:$HOSTNAME")
+  local cksum _
+  read -r cksum _ < <(cksum <<<"$USER:$HOSTNAME")
 
   # shellcheck disable=SC2030
   if ! [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]]; then
@@ -134,6 +134,7 @@ pg::_gh_migrate() {
   fi
   # Use a subdirectory, rather than /tmp, so git's filesystem heuristics don't
   # get confused (e.g. to configure https://stackoverflow.com/a/2518917/113632)
+  # shellcheck disable=SC2031 # spurious warning due to pg::_check_out_of_date
   local tmp_loc="${PWD}/safe_to_delete_${RANDOM}"
   git clone --quiet "$(cat gh_migrate)" "$tmp_loc" &&
     mv "$tmp_loc/.git" . &&
