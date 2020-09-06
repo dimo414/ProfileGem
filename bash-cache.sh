@@ -5,7 +5,7 @@
 
 # Configuration
 _bc_enabled=true
-_bc_version=(0 7 3)
+_bc_version=(0 8 0)
 
 if [[ -n "$BC_HASH_COMMAND" ]]; then
   _bc_hash_command="$BC_HASH_COMMAND"
@@ -19,7 +19,7 @@ if [[ -n "$_BC_TESTONLY_CACHE_DIR" ]]; then
   _bc_cache_dir="$_BC_TESTONLY_CACHE_DIR"
 else
   printf -v _bc_cache_dir '%s/bash-cache-%s.%s-%s' \
-    "${BC_CACHE_DIR:-${TMPDIR:-/tmp}}" "${_bc_version[@]::2}" "$(id -u)"
+    "${BC_CACHE_DIR:-${TMPDIR:-/tmp}}" "${_bc_version[@]::2}" "$EUID"
 fi
 
 _bc_locks_dir="${_bc_cache_dir}.locks"
@@ -111,6 +111,8 @@ bc::_newer_than() {
 # Reads stdin into a variable, accounting for trailing newlines. Avoids needing a subshell or
 # command substitution.
 # See http://stackoverflow.com/a/22607352/113632 and https://stackoverflow.com/a/49552002/113632
+# TODO this isn't sufficient for NUL (\0) characters; how about opening a file
+# descriptor to each file and piping it directly to stdout/err instead?
 bc::_read_input() {
   # Use unusual variable names to avoid colliding with a variable name
   # the user might pass in (notably "contents")
@@ -164,11 +166,20 @@ bc::_write_cache() {
 }
 
 # Triggers a cleanup of stale cache records. By default cleanup runs at most
-# once every 60 seconds, but may be more frequent if shorter cache expiries are
-# configured.
+# once every 60 seconds. If shorter cache expirations are configured cleanups
+# will run more frequently.
 bc::_cleanup() {
   [[ -d "$_bc_cache_dir" ]] || return
   bc::_newer_than "$_bc_cache_dir/cleanup" "$_bc_cleanup_frequency" && return
+
+  # Basic mutex to prevent concurrent cleanups - BashFAQ/045
+  if mkdir "${_bc_cache_dir}/do_cleanup" 2>/dev/null; then
+    bc::_do_cleanup 2>/dev/null
+    rm -r "${_bc_cache_dir}/do_cleanup"
+  fi
+}
+
+bc::_do_cleanup() {
   touch "$_bc_cache_dir/cleanup"
   cd / || return # necessary because find will cd back to the cwd, which can fail
 
@@ -304,9 +315,9 @@ bc::cache() {
   }
 
   # shellcheck disable=SC2155
-  local warm_function_body=$(declare -f "bc::_warm_template"  | tail -n +2)
+  local warm_function_body=$(declare -f "bc::_warm_template" | tail -n +2)
   # shellcheck disable=SC2155
-  local cache_function_body=$(declare -f "bc::_cache_template"  | tail -n +2)
+  local cache_function_body=$(declare -f "bc::_cache_template" | tail -n +2)
   unset -f bc::_warm_template bc::_cache_template
   eval "$(printf 'bc::warm::%q()\n%s ; %q()\n%s' \
       "$func" "$warm_function_body" "$func" "$cache_function_body" \
@@ -366,7 +377,7 @@ bc::locked_cache() {
   }
 
   # shellcheck disable=SC2155
-  local locked_function_body=$(declare -f "bc::_locked_template"  | tail -n +2)
+  local locked_function_body=$(declare -f "bc::_locked_template" | tail -n +2)
   unset -f bc::_locked_template
   eval "$(printf '%q()\n%s' "$func" "$locked_function_body" \
     | sed -e "s/%func%/${func}/g" -e 's/&& %redir%/{fd}>/g')"
@@ -392,7 +403,6 @@ bc::benchmark() {
   # Drop into a subshell so the benchmark doesn't affect the calling shell
   (
     _bc_cache_dir=$(mktemp -d "${TMPDIR:-/tmp}/bc-benchmark-XXXXXX") || return
-    TIMEFORMAT='%R'
 
     # Undo the caching if $func has already been cached - no-op otherwise
     bc::copy_function "bc::orig::${func}" "${func}" &> /dev/null || true
