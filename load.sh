@@ -25,15 +25,13 @@ elif ! [[ -e "${BASH_SOURCE[0]}" ]]; then
 fi
 
 _PGEM_LOC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)" # can't use pg::realpath yet
-PGEM_VERSION=(0 11 0)
+PGEM_VERSION=(0 12 0)
 _PGEM_LAST_UPDATE_MARKER="$_PGEM_LOC/.last_updated"
 
 _PRE_PGEM_PWD="$PWD"
 _PRE_PGEM_PATH="$PATH"
 [[ -n "$PS1" ]] && _PRE_PGEM_PS1="$PS1"
 [[ -n "$PROMPT_COMMAND" ]] && _PRE_PGEM_PROMPT_COMMAND="$PROMPT_COMMAND"
-
-START_DIR=
 
 # TODO do we actually need this cd at all?
 cd "$_PGEM_LOC" || return 2>/dev/null || exit
@@ -72,6 +70,7 @@ while IFS= read -r gem; do
     _GEMS+=("$gem")
 done < <(grep '^#GEM' "${_PGEM_LOC}/$(pg::_configFile)" | awk '{ print $2 ".gem" }')
 pg::log "About to load gems: ${_GEMS[*]}"
+unset gem
 
 # TODO add a cleanup.sh script which is invoked by pgem_reload (but not load.sh) before anything else.
 pg::_eachGem pg::_loadBase      # initialize environment, executed before config file is parsed
@@ -92,18 +91,8 @@ if [[ -n "$PS1" ]]; then        # interactive shell
 fi
 pg::log # for newline
 
-# shellcheck disable=SC2164
-[[ -d "$_PRE_PGEM_PWD" ]] && cd "$_PRE_PGEM_PWD"
-
-if [[ -n "$START_DIR" ]]; then
-  if [[ -d "$START_DIR" ]]; then
-    pg::log "Switching from $PWD to $START_DIR"
-    pg::log
-    cd "$START_DIR" || pg::err "Could not cd to START_DIR $START_DIR"
-  else
-    pg::err "Start dir $START_DIR does not exist!"
-  fi
-fi
+# Attempt to get back to the initial PWD, but disregard errors if it fails
+cd "$_PRE_PGEM_PWD" 2>/dev/null || true
 
 # Enable running a command in ProfileGem's scope
 # Useful when we aren't in an interactive shell, such as cron
