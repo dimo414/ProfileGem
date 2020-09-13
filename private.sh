@@ -148,7 +148,8 @@ pg::_gh_migrate() {
 # Sources a file if it exists, skips if not
 pg::_srcIfExist() {
   if [[ -f "${1:?}" ]];  then
-    pg::log "Including $(pg::relative_path "$1" "$_PGEM_LOC")"
+    # pg::relative_path is slow, so we need to guard this call
+    if "${_PGEM_DEBUG:-false}"; then pg::log "Including $(pg::relative_path "$1" "$_PGEM_LOC")"; fi;
     source "$1"
   fi
 }
