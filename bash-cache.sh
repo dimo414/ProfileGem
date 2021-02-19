@@ -294,12 +294,12 @@ bc::cache() {
 
     while true; do
       # Attempt to open the /out and /err files as descriptors 3 and 4; if either fails to open the
-      # block does not execute. If they both open succesfully the descriptors can be safely read
+      # block does not execute. If they both open successfully the descriptors can be safely read
       # even if the files are concurrently cleaned up.
       # Descriptor 2 (stderr) is bounced to descriptor 5 (in the inner block) and back (in the outer
       # block) so that errors opening either file (in the middle block) can be discarded.
       { { {
-        exit=$(< "${cache_read_loc}/exit")
+        IFS='' read -r exit <"${cache_read_loc}/exit" || true
         # if exit is missing/empty we raced with a cleanup, disregard cache
         if [[ -n "$exit" ]]; then
           if (( refresh > 0 )) && ! bc::_newer_than "${cache_read_loc}/exit" "$refresh"; then
@@ -389,12 +389,12 @@ bc::locked_cache() {
 }
 
 # A lightweight alternative to bc::cache that attempts to persist repeated calls without disk I/O
-# and with weaker guarentees than bc::cache. Unlike bc::cache, memoized functions:
+# and with weaker guarantees than bc::cache. Unlike bc::cache, memoized functions:
 # * Only persist stdout (stderr is untouched, and therefore only printed when the backing function
 #   is actually run)
 # * Only memoize calls that succeed (0 return code)
 # * Only persist a subset of recent invocations (currently just the most recent one)
-# * Are only persisted within the current shell
+# * Are only persisted within the current shell (important! see below)
 # * Are persisted indefinitely, there is no TTL
 #
 # It is most useful for idempotent functions that:
@@ -408,6 +408,10 @@ bc::locked_cache() {
 # that are typically called repeatedly with the same inputs (e.g. a no-arg PWD-sensitive function
 # that is called many times from the same directory). Assume that calls with different arguments or
 # environment variables invalidates all cached data.
+#
+# Note that an in-memory cache is incompatible with subshells or command substitutions. If the
+# function is cached within a subshell the cached result will _not_ propagate back to the calling
+# shell.
 #
 # Usage:
 #   bc::memoize FUNCTION [ENV_VARS ...]
