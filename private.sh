@@ -113,7 +113,7 @@ pg::_updateRepo() {
     # TODO this should alert more clearly if the user needs to merge heads
     hg pull > /dev/null
     hg update -c tip > /dev/null
-  elif [[ -d ".git" ]]; then
+  elif [[ -e ".git" ]]; then
     # TODO are there failure modes for this?
     git pull --quiet --rebase > /dev/null
   else
