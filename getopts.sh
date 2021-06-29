@@ -2,6 +2,9 @@
 #
 # Helper utility to simplify using Bash's getopts builtin.
 #
+# This is lightly forked from https://gist.github.com/dimo414/93776b78a38791ed1bd1bad082d08009
+# to use ProfileGem's namespace.
+#
 # Example usage:
 # foo() {
 #   local _usage=...                # optional usage string
