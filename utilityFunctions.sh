@@ -257,8 +257,7 @@ pg::confirm_no() {
 #
 # Once the command is installed the stub function removes itself.
 pg::require() {
-  local cmd="${1:?cmd}"
-  local msg="${2:?msg}"
+  local cmd="${1:?cmd}" msg="${2:?msg}"
 
   # This early check might increase startup time, especially if a gem calls
   # pg::require many times. It might be better to remove it so the function
@@ -278,4 +277,32 @@ pg::require() {
     }
 EOF
   )"
+}
+
+# Given a script to source, and one or more command names, defines stub
+# functions for each command that will lazily `source` the script when invoked
+# and then re-execute the given command, on the assumption that the function has
+# been overwritten by the sourced script.
+#
+# Useful for scripts that are expensive to source or may not always exist on the
+# machine (e.g. sourcing from a network file system).
+pg::lazy_source() {
+  local script="${1:?script}" cmd
+  shift
+  : "${2:?command}"
+  for cmd in "$@"; do
+    eval "$(printf '%q() { pg::_lazy_source %q %q 0 "$@"; }' "$cmd" "$script" "$cmd")"
+  done
+}
+
+pg::_lazy_source() {
+  local script="${1:?script}" cmd="${2:?cmd}" attempt="${3:?attempt}"
+  shift 3
+  if (( attempt >= 10 )); then
+    pg::err "pg::_lazy_source failed to source %s from %s after several attempts; try sourcing manually and review configuration." \
+      "$cmd" "$script"
+    return 127
+  fi
+  eval "$(printf '%q() { pg::_lazy_source %q %q %q "$@"; }' "$cmd" "$script" "$cmd" "$(( attempt+1 ))")"
+  source "$script" && "$cmd" "$@"
 }
