@@ -288,8 +288,8 @@ EOF
 # machine (e.g. sourcing from a network file system).
 pg::lazy_source() {
   local script="${1:?script}" cmd
-  shift
   : "${2:?command}"
+  shift
   for cmd in "$@"; do
     eval "$(printf '%q() { pg::_lazy_source %q %q 0 "$@"; }' "$cmd" "$script" "$cmd")"
   done
