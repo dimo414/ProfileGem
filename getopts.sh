@@ -48,7 +48,7 @@
 #   _parse_opts_helper a:b:c 0 '' "$@" || return
 #   shift $((OPTIND - 1)); OPTIND=1
 pg::getopts() {
-  local i char last_char var vars=() optstring=${1:?optstring} min_args=${2:-0} max_args=${3:-}
+  local i char last_char var vars=() optstring=${1:-} min_args=${2:-0} max_args=${3:-}
   optstring="${optstring#:}" # ensure string is not prefixed with :
   if ! [[ "$optstring" =~ ^[a-zA-Z0-9:]*$ ]] || [[ "$optstring" == *::* ]]; then
     pg::err "Invalid optstring: $optstring"

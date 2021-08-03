@@ -38,6 +38,21 @@ expect_eq() {
   expect_eq "$output" $'Option \'-c\' requires an argument\nUsage: It\'s pretty basic...'
 }
 
+@test "pg::getopts numeric args" {
+  num() {
+    eval "$(pg::getopts 012:a)"
+    echo "0=${o0} 1=${o1} 2=${o2} a=${a} -- $#: $*"
+  }
+
+  run num
+  (( status == 0 ))
+  expect_eq "$output" '0=0 1=0 2= a=0 -- 0: '
+
+  run num -a -2 foo -1 -0 bar
+  (( status == 0 ))
+  expect_eq "$output" '0=1 1=1 2=foo a=1 -- 1: bar'
+}
+
 @test "pg::getopts min_args" {
   min() {
     eval "$(pg::getopts abc:d: 2)"
@@ -93,10 +108,10 @@ expect_eq() {
 }
 
 @test "pg::getopts invalid optstring" {
-  invalid() { eval "$(pg::getopts '123invalid')"; }
+  invalid() { eval "$(pg::getopts '@invalid')"; echo "not reached"; }
   run invalid
-  (( status != 0 ))
-  expect_eq "$output" 'Invalid optstring: 123invalid'
+  (( status == 2 ))
+  expect_eq "$output" 'Invalid optstring: @invalid'
 }
 
 @test "pg::getopts positional only" {
