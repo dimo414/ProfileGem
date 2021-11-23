@@ -122,29 +122,6 @@ pg::_updateRepo() {
   fi
 }
 
-# Migrates a repo from Mercurial to Git/GitHub if a gh_migrate file is found
-pg::_gh_migrate() {
-  if ! [[ -f gh_migrate ]] || ! [[ -d .hg ]]; then
-    pg::log "Not migrating $(basename "$PWD")"
-    return
-  fi
-  if hg outgoing -q; then
-    pg::err "'hg outgoing -R ${PWD}' reports outgoing changes that will be lost; not migrating"
-    return 1
-  fi
-  # Use a subdirectory, rather than /tmp, so git's filesystem heuristics don't
-  # get confused (e.g. to configure https://stackoverflow.com/a/2518917/113632)
-  # shellcheck disable=SC2031 # spurious warning due to pg::_check_out_of_date
-  local tmp_loc="${PWD}/safe_to_delete_${RANDOM}"
-  git clone --quiet "$(cat gh_migrate)" "$tmp_loc" &&
-    mv "$tmp_loc/.git" . &&
-    rm gh_migrate &&
-    mv .hg "$tmp_loc" &&
-    rm -rf "$tmp_loc" &&
-    git checkout --theirs -- . &&
-    echo "Migrated $(basename "$PWD") to git"
-}
-
 # Sources a file if it exists, skips if not
 pg::_srcIfExist() {
   if [[ -f "${1:?}" ]];  then
