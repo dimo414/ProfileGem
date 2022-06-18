@@ -6,7 +6,7 @@
 # Print a warning if ProfileGem hasn't been updated recently.
 #
 # "Recently" is left unspecified, but currently we use a random number of days
-# [32,42) to smooth update-prompting over time. This should reduce spikes caused
+# [62,72) to smooth update-prompting over time. This should reduce spikes caused
 # by multiple installations/updates on a particular day. Two installations last
 # updated on the same day will not necessarily be prompted to update again at
 # the same time, and ideally will wander apart over time.
@@ -18,8 +18,8 @@ pg::_check_out_of_date() {
   # shellcheck disable=SC2030
   if ! [[ -e "$_PGEM_LAST_UPDATE_MARKER" ]]; then
     touch "$_PGEM_LAST_UPDATE_MARKER"
-  elif [[ -z "$(RANDOM="$cksum"; find "$_PGEM_LAST_UPDATE_MARKER" -newermt "-$((RANDOM%10 + 32)) days")" ]]; then
-    pg::err "ProfileGem is more than a month out of date; run 'pgem_update' to update."
+  elif [[ -z "$(RANDOM="$cksum"; find "$_PGEM_LAST_UPDATE_MARKER" -newermt "-$((RANDOM%10 + 62)) days")" ]]; then
+    pg::err "ProfileGem is more than two months out of date; run 'pgem_update' to update."
     pg::err "  Or run 'pgem_snooze_update' to snooze this message."
     pgem_snooze_update() {
       touch "$_PGEM_LAST_UPDATE_MARKER"
