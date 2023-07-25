@@ -84,7 +84,11 @@ pg::_eachGem pg::_loadFuncs     # define functions
 pg::_eachGem pg::_loadScripts   # add scripts to path
 
 if [[ -n "$PS1" ]]; then        # interactive shell
-  pg::_check_out_of_date
+  # Disable update reminders until at least Jan 2024.
+  # Unfortunately there are a group of users who cannot easily continue maintaining their gems,
+  # and this is the most pragmatic solution. We can consider restoring update reminders at some
+  # future date.
+  #pg::_check_out_of_date
   if "${PGEM_INFO_ON_START:=false}"; then
     pgem_info
   fi
