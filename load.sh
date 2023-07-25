@@ -56,7 +56,8 @@ if "${PGEM_DECORATE_SOURCE:-true}" && [[ "$(type -t source)" == "builtin" ]]; th
     local file=$1; shift
     # if file looks like a path, make it absolute. Since source first searches the PATH it's not
     # safe to just check [[ -e "$file" ]] because it might be shadowing something on the PATH.
-    if [[ "$file" == */* ]]; then
+    # Avoid resolving named pipes (e.g. `source <(echo true)`) which do not point to real paths.
+    if [[ "$file" == */* ]] && ! [[ -p "$file" ]]; then
       file=$(pg::realpath "$file")
     fi
     command source "$file" "$@"
